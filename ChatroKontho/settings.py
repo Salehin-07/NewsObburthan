@@ -29,8 +29,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY','hdjdlpakajsjsfjsjajwuwhh267992knb@@@##
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','obburthan.onrender.com']
+ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com']
 
+CSRF_TRUSTED_ORIGINS=['https://daily-obburthan.onrender.com']
 
 # Application definition
 
