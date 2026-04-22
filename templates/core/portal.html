@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}পোর্টাল{% endblock %}
+{% block meta_description %}দৈনিক অভ্যুত্থান পত্রিকায় বিজ্ঞাপন দিন অথবা প্রতিনিধি / সাংবাদিক হিসেবে যোগ দিন।{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portal.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="pt-hero">
+  <div class="pt-hero__inner">
+    <span class="pt-hero__eyebrow">পোর্টাল</span>
+    <h1 class="pt-hero__title">আমাদের সাথে যুক্ত হন</h1>
+    <p class="pt-hero__sub">বিজ্ঞাপনদাতা হিসেবে আপনার পণ্য প্রচার করুন অথবা<br>দৈনিক অভ্যুত্থানের প্রতিনিধি / সাংবাদিক হিসেবে কাজ করুন।</p>
+  </div>
+</section>
+
+<!-- Tabs Navigation -->
+<div class="pt-tabs-wrap">
+  <div class="pt-tabs">
+    <button class="pt-tab pt-tab--active" data-tab="ad">
+      <span class="pt-tab__icon">◈</span>
+      <span class="pt-tab__label">বিজ্ঞাপন দিন</span>
+    </button>
+    <div class="pt-tabs__sep"></div>
+    <button class="pt-tab" data-tab="rep">
+      <span class="pt-tab__icon">◉</span>
+      <span class="pt-tab__label">প্রতিনিধি / সাংবাদিক হন</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  PANEL 1 — বিজ্ঞাপন                       -->
+<!-- ══════════════════════════════════════════ -->
+<section class="pt-panel pt-panel--active" id="panel-ad">
+  <div class="pt-panel__inner">
+
+    <div class="pt-panel__info">
+      <div class="pt-panel__badge">বিজ্ঞাপন</div>
+      <h2 class="pt-panel__title">আপনার পণ্য লক্ষ পাঠকের কাছে পৌঁছান</h2>
+      <p class="pt-panel__desc">দৈনিক অভ্যুত্থান বাংলাদেশের অন্যতম পঠিত অনলাইন সংবাদপত্র। আমাদের বিজ্ঞাপন প্যাকেজ আপনার ব্যবসাকে সঠিক পাঠকের কাছে পৌঁছে দেবে।</p>
+
+      <ul class="pt-panel__perks">
+        <li><span class="pt-perks__dot"></span>হোমপেজ ব্যানার বিজ্ঞাপন</li>
+        <li><span class="pt-perks__dot"></span>আর্টিকেলের মাঝে ইনলাইন বিজ্ঞাপন</li>
+        <li><span class="pt-perks__dot"></span>বিজ্ঞপ্তি / প্রেস রিলিজ প্রকাশ</li>
+        <li><span class="pt-perks__dot"></span>সোশ্যাল মিডিয়া বুস্ট প্যাকেজ</li>
+        <li><span class="pt-perks__dot"></span>বিশেষ প্রতিবেদন / স্পনসর কন্টেন্ট</li>
+      </ul>
+
+      <div class="pt-panel__contact-note">
+        বিজ্ঞাপন সংক্রান্ত জিজ্ঞাসায়:<br>
+        <a href="mailto:ads@abhyuthan.com.bd">ads@abhyuthan.com.bd</a>
+      </div>
+    </div>
+
+    <div class="pt-form-wrap">
+      {% if ad_success %}
+        <div class="pt-success">
+          <div class="pt-success__icon">✓</div>
+          <h3 class="pt-success__title">আবেদন সফলভাবে জমা হয়েছে!</h3>
+          <p class="pt-success__msg">আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।</p>
+        </div>
+      {% else %}
+
+        {% if ad_form.errors %}
+          <div class="pt-alert pt-alert--error">কিছু তথ্য সঠিকভাবে পূরণ করা হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।</div>
+        {% endif %}
+
+        <form class="pt-form" method="post" action="{% url 'core:portal' %}#panel-ad" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="ad" />
+
+          <h3 class="pt-form__heading">বিজ্ঞাপনের আবেদন ফর্ম</h3>
+
+          <div class="pt-form__row pt-form__row--2col">
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="ad_name">প্রতিষ্ঠান / ব্যক্তির নাম <span class="req">*</span></label>
+              <input class="pt-form__input{% if ad_form.name.errors %} err{% endif %}" type="text" id="ad_name" name="name" placeholder="নাম লিখুন" value="{{ ad_form.name.value|default:'' }}" required />
+              {% if ad_form.name.errors %}<span class="pt-form__error">{{ ad_form.name.errors|join:", " }}</span>{% endif %}
+            </div>
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="ad_phone">মোবাইল নম্বর <span class="req">*</span></label>
+              <input class="pt-form__input{% if ad_form.phone.errors %} err{% endif %}" type="tel" id="ad_phone" name="phone" placeholder="০১XXXXXXXXX" value="{{ ad_form.phone.value|default:'' }}" required />
+              {% if ad_form.phone.errors %}<span class="pt-form__error">{{ ad_form.phone.errors|join:", " }}</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="ad_email">ইমেইল ঠিকানা <span class="req">*</span></label>
+            <input class="pt-form__input{% if ad_form.email.errors %} err{% endif %}" type="email" id="ad_email" name="email" placeholder="example@email.com" value="{{ ad_form.email.value|default:'' }}" required />
+            {% if ad_form.email.errors %}<span class="pt-form__error">{{ ad_form.email.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="ad_type">বিজ্ঞাপনের ধরন <span class="req">*</span></label>
+            <select class="pt-form__select{% if ad_form.ad_type.errors %} err{% endif %}" id="ad_type" name="ad_type" required>
+              <option value="" disabled {% if not ad_form.ad_type.value %}selected{% endif %}>ধরন নির্বাচন করুন</option>
+              <option value="হোমপেজ ব্যানার" {% if ad_form.ad_type.value == 'হোমপেজ ব্যানার' %}selected{% endif %}>হোমপেজ ব্যানার</option>
+              <option value="ইনলাইন বিজ্ঞাপন" {% if ad_form.ad_type.value == 'ইনলাইন বিজ্ঞাপন' %}selected{% endif %}>ইনলাইন বিজ্ঞাপন</option>
+              <option value="বিজ্ঞপ্তি / প্রেস রিলিজ" {% if ad_form.ad_type.value == 'বিজ্ঞপ্তি / প্রেস রিলিজ' %}selected{% endif %}>বিজ্ঞপ্তি / প্রেস রিলিজ</option>
+              <option value="স্পনসর কন্টেন্ট" {% if ad_form.ad_type.value == 'স্পনসর কন্টেন্ট' %}selected{% endif %}>স্পনসর কন্টেন্ট</option>
+              <option value="সোশ্যাল মিডিয়া বুস্ট" {% if ad_form.ad_type.value == 'সোশ্যাল মিডিয়া বুস্ট' %}selected{% endif %}>সোশ্যাল মিডিয়া বুস্ট</option>
+              <option value="অন্যান্য" {% if ad_form.ad_type.value == 'অন্যান্য' %}selected{% endif %}>অন্যান্য</option>
+            </select>
+            {% if ad_form.ad_type.errors %}<span class="pt-form__error">{{ ad_form.ad_type.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <div class="pt-form__row pt-form__row--2col">
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="ad_budget">আনুমানিক বাজেট (টাকা)</label>
+              <input class="pt-form__input" type="number" id="ad_budget" name="budget" placeholder="যেমন: ৫০০০" value="{{ ad_form.budget.value|default:'' }}" min="0" />
+            </div>
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="ad_duration">মেয়াদ</label>
+              <select class="pt-form__select" id="ad_duration" name="duration">
+                <option value="" {% if not ad_form.duration.value %}selected{% endif %}>নির্বাচন করুন</option>
+                <option value="১ সপ্তাহ" {% if ad_form.duration.value == '১ সপ্তাহ' %}selected{% endif %}>১ সপ্তাহ</option>
+                <option value="১ মাস" {% if ad_form.duration.value == '১ মাস' %}selected{% endif %}>১ মাস</option>
+                <option value="৩ মাস" {% if ad_form.duration.value == '৩ মাস' %}selected{% endif %}>৩ মাস</option>
+                <option value="৬ মাস" {% if ad_form.duration.value == '৬ মাস' %}selected{% endif %}>৬ মাস</option>
+                <option value="১ বছর" {% if ad_form.duration.value == '১ বছর' %}selected{% endif %}>১ বছর</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="ad_details">বিজ্ঞাপনের বিবরণ <span class="req">*</span></label>
+            <textarea class="pt-form__textarea{% if ad_form.details.errors %} err{% endif %}" id="ad_details" name="details" rows="5" placeholder="আপনার পণ্য বা সেবার বিবরণ এবং বিজ্ঞাপনের উদ্দেশ্য লিখুন..." required>{{ ad_form.details.value|default:'' }}</textarea>
+            {% if ad_form.details.errors %}<span class="pt-form__error">{{ ad_form.details.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <button type="submit" class="pt-form__submit">
+            আবেদন জমা দিন
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ -->
+<!--  PANEL 2 — প্রতিনিধি / সাংবাদিক            -->
+<!-- ══════════════════════════════════════════ -->
+<section class="pt-panel" id="panel-rep">
+  <div class="pt-panel__inner">
+
+    <div class="pt-panel__info">
+      <div class="pt-panel__badge pt-panel__badge--rep">প্রতিনিধি</div>
+      <h2 class="pt-panel__title">দেশের গল্প বলার দায়িত্ব নিন</h2>
+      <p class="pt-panel__desc">দৈনিক অভ্যুত্থানের সাথে যুক্ত হয়ে আপনার জেলা বা উপজেলার খবর পাঠকের কাছে পৌঁছে দিন। সৎ ও দায়িত্বশীল সাংবাদিকতার পথে আমরা একসাথে।</p>
+
+      <ul class="pt-panel__perks">
+        <li><span class="pt-perks__dot"></span>জেলা / উপজেলা প্রতিনিধি</li>
+        <li><span class="pt-perks__dot"></span>স্টাফ রিপোর্টার</li>
+        <li><span class="pt-perks__dot"></span>ফটো সাংবাদিক</li>
+        <li><span class="pt-perks__dot"></span>ভিডিও জার্নালিস্ট</li>
+        <li><span class="pt-perks__dot"></span>অনুসন্ধানী সাংবাদিক</li>
+      </ul>
+
+      <div class="pt-panel__contact-note">
+        বিস্তারিত জানতে:<br>
+        <a href="mailto:hr@abhyuthan.com.bd">hr@abhyuthan.com.bd</a>
+      </div>
+    </div>
+
+    <div class="pt-form-wrap">
+      {% if rep_success %}
+        <div class="pt-success">
+          <div class="pt-success__icon">✓</div>
+          <h3 class="pt-success__title">আবেদন সফলভাবে জমা হয়েছে!</h3>
+          <p class="pt-success__msg">আমাদের সম্পাদকীয় দল শীঘ্রই আপনার সাথে যোগাযোগ করবে।</p>
+        </div>
+      {% else %}
+
+        {% if rep_form.errors %}
+          <div class="pt-alert pt-alert--error">কিছু তথ্য সঠিকভাবে পূরণ করা হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।</div>
+        {% endif %}
+
+        <form class="pt-form" method="post" action="{% url 'core:portal' %}#panel-rep" novalidate enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="rep" />
+
+          <h3 class="pt-form__heading">প্রতিনিধি / সাংবাদিক আবেদন ফর্ম</h3>
+
+          <div class="pt-form__row pt-form__row--2col">
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="rep_name">পূর্ণ নাম <span class="req">*</span></label>
+              <input class="pt-form__input{% if rep_form.name.errors %} err{% endif %}" type="text" id="rep_name" name="name" placeholder="আপনার পূর্ণ নাম" value="{{ rep_form.name.value|default:'' }}" required />
+              {% if rep_form.name.errors %}<span class="pt-form__error">{{ rep_form.name.errors|join:", " }}</span>{% endif %}
+            </div>
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="rep_phone">মোবাইল নম্বর <span class="req">*</span></label>
+              <input class="pt-form__input{% if rep_form.phone.errors %} err{% endif %}" type="tel" id="rep_phone" name="phone" placeholder="০১XXXXXXXXX" value="{{ rep_form.phone.value|default:'' }}" required />
+              {% if rep_form.phone.errors %}<span class="pt-form__error">{{ rep_form.phone.errors|join:", " }}</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_email">ইমেইল ঠিকানা <span class="req">*</span></label>
+            <input class="pt-form__input{% if rep_form.email.errors %} err{% endif %}" type="email" id="rep_email" name="email" placeholder="example@email.com" value="{{ rep_form.email.value|default:'' }}" required />
+            {% if rep_form.email.errors %}<span class="pt-form__error">{{ rep_form.email.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <div class="pt-form__row pt-form__row--2col">
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="rep_role">আবেদনের পদ <span class="req">*</span></label>
+              <select class="pt-form__select{% if rep_form.role.errors %} err{% endif %}" id="rep_role" name="role" required>
+                <option value="" disabled {% if not rep_form.role.value %}selected{% endif %}>পদ নির্বাচন করুন</option>
+                <option value="জেলা প্রতিনিধি" {% if rep_form.role.value == 'জেলা প্রতিনিধি' %}selected{% endif %}>জেলা প্রতিনিধি</option>
+                <option value="উপজেলা প্রতিনিধি" {% if rep_form.role.value == 'উপজেলা প্রতিনিধি' %}selected{% endif %}>উপজেলা প্রতিনিধি</option>
+                <option value="স্টাফ রিপোর্টার" {% if rep_form.role.value == 'স্টাফ রিপোর্টার' %}selected{% endif %}>স্টাফ রিপোর্টার</option>
+                <option value="ফটো সাংবাদিক" {% if rep_form.role.value == 'ফটো সাংবাদিক' %}selected{% endif %}>ফটো সাংবাদিক</option>
+                <option value="ভিডিও জার্নালিস্ট" {% if rep_form.role.value == 'ভিডিও জার্নালিস্ট' %}selected{% endif %}>ভিডিও জার্নালিস্ট</option>
+                <option value="অনুসন্ধানী সাংবাদিক" {% if rep_form.role.value == 'অনুসন্ধানী সাংবাদিক' %}selected{% endif %}>অনুসন্ধানী সাংবাদিক</option>
+              </select>
+              {% if rep_form.role.errors %}<span class="pt-form__error">{{ rep_form.role.errors|join:", " }}</span>{% endif %}
+            </div>
+            <div class="pt-form__group">
+              <label class="pt-form__label" for="rep_district">জেলা / এলাকা <span class="req">*</span></label>
+              <input class="pt-form__input{% if rep_form.district.errors %} err{% endif %}" type="text" id="rep_district" name="district" placeholder="আপনার জেলার নাম" value="{{ rep_form.district.value|default:'' }}" required />
+              {% if rep_form.district.errors %}<span class="pt-form__error">{{ rep_form.district.errors|join:", " }}</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_education">শিক্ষাগত যোগ্যতা <span class="req">*</span></label>
+            <input class="pt-form__input{% if rep_form.education.errors %} err{% endif %}" type="text" id="rep_education" name="education" placeholder="সর্বোচ্চ শিক্ষাগত যোগ্যতা" value="{{ rep_form.education.value|default:'' }}" required />
+            {% if rep_form.education.errors %}<span class="pt-form__error">{{ rep_form.education.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_experience">পূর্ব অভিজ্ঞতা</label>
+            <textarea class="pt-form__textarea" id="rep_experience" name="experience" rows="4" placeholder="পূর্বে সাংবাদিকতার কোনো অভিজ্ঞতা থাকলে সংক্ষেপে লিখুন...">{{ rep_form.experience.value|default:'' }}</textarea>
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_why">কেন আমাদের সাথে কাজ করতে চান? <span class="req">*</span></label>
+            <textarea class="pt-form__textarea{% if rep_form.motivation.errors %} err{% endif %}" id="rep_why" name="motivation" rows="4" placeholder="সংক্ষেপে আপনার আগ্রহ ও উদ্দেশ্য লিখুন..." required>{{ rep_form.motivation.value|default:'' }}</textarea>
+            {% if rep_form.motivation.errors %}<span class="pt-form__error">{{ rep_form.motivation.errors|join:", " }}</span>{% endif %}
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_portfolio">পোর্টফোলিও / লেখার নমুনা লিংক</label>
+            <input class="pt-form__input" type="url" id="rep_portfolio" name="portfolio" placeholder="https://..." value="{{ rep_form.portfolio.value|default:'' }}" />
+          </div>
+
+          <div class="pt-form__group">
+            <label class="pt-form__label" for="rep_cv">জীবনবৃত্তান্ত (CV) আপলোড করুন</label>
+            <div class="pt-file-wrap">
+              <input class="pt-file-input" type="file" id="rep_cv" name="cv" accept=".pdf,.doc,.docx" />
+              <label class="pt-file-label" for="rep_cv">
+                <span class="pt-file-label__icon">↑</span>
+                <span class="pt-file-label__text">ফাইল নির্বাচন করুন <small>(PDF, DOC — সর্বোচ্চ ৫ MB)</small></span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="pt-form__submit">
+            আবেদন জমা দিন
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/portal.js' %}"></script>
+{% endblock %}

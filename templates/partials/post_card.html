@@ -1,0 +1,49 @@
+
+<article class="ck-card"
+         id="post-{{ post.slug }}"
+         data-ck-post-title="{{ post.title }}"
+         data-ck-post-url="{% url 'core:post_detail' slug=post.slug %}"
+         data-ck-post-tags="{% for t in post.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+  <a href="{% url 'core:post_detail' slug=post.slug %}" class="ck-card__img-wrap" tabindex="-1" aria-hidden="true">
+    {% if post.cover_image %}
+      <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="lazy" width="480" height="300" />
+    {% else %}
+      <div class="ck-card__no-img" aria-hidden="true">ছক</div>
+    {% endif %}
+  </a>
+
+  {% if post.tags.all %}
+  <div class="ck-card__tags">
+    {% for tag in post.tags.all %}
+      <span class="ck-tag" style="font-size:.58rem;padding:.12rem .45rem">{{ tag.name }}</span>
+      {% if not forloop.last %}<span class="ck-card__tag-sep" aria-hidden="true">·</span>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h3 class="ck-card__title">
+    <a href="{% url 'core:post_detail' slug=post.slug %}">{{ post.title }}</a>
+  </h3>
+
+  <p class="ck-card__excerpt">{{ post.display_excerpt }}</p>
+
+  <div class="ck-meta" style="margin-top:auto;padding-top:.5rem">
+    <span class="ck-meta-author">
+      {% if post.author.reporter_profile.photo %}
+        <img class="ck-meta-avatar" src="{{ post.author.reporter_profile.photo.url }}" alt="" />
+      {% else %}
+        <span class="ck-meta-avatar-placeholder">
+          {{ post.author.get_full_name|default:post.author.username|slice:":1"|upper }}
+        </span>
+      {% endif %}
+      {{ post.author.get_full_name|default:post.author.username }}
+    </span>
+    <span class="ck-meta-dot"></span>
+    <span class="ck-meta-date">{{ post.published_at|date:"d M Y" }}</span>
+    <span class="ck-meta-dot"></span>
+    <span class="ck-meta-read">{{ post.reading_time }} মিনিট</span>
+  </div>
+
+  <div class="ck-card__divider"></div>
+</article>

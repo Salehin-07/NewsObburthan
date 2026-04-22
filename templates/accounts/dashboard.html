@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ড্যাশবোর্ড — {{ request.user.get_full_name|default:request.user.username }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/accounts.css' %}" />{% endblock %}
+
+{% block content %}
+<div class="ck-container ck-portal">
+
+  <div class="ck-portal-header">
+    <div class="ck-portal-header__left">
+      <nav class="ck-portal-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'core:home' %}">প্রচ্ছদ</a>
+        <span class="ck-portal-breadcrumb__sep">›</span>
+        <span>ড্যাশবোর্ড</span>
+      </nav>
+      <h1 class="ck-portal-title">
+        স্বাগতম, {{ request.user.get_full_name|default:request.user.username }}
+      </h1>
+      <p class="ck-portal-subtitle">
+        {{ account_profile.roles_display }}
+        {% if account_profile.designation %} · {{ account_profile.designation }}{% endif %}
+      </p>
+    </div>
+    <div class="ck-portal-header__actions">
+      <a href="{% url 'accounts:profile' %}" class="ck-btn ck-btn--secondary ck-btn--sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        প্রোফাইল
+      </a>
+      {% if account_profile.can_write %}
+      <a href="{% url 'accounts:post_create' %}" class="ck-btn ck-btn--primary ck-btn--sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        নতুন সংবাদ
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="ck-stats-row">
+    <div class="ck-stat-card">
+      <div class="ck-stat-card__label">মোট সংবাদ</div>
+      <div class="ck-stat-card__value">{{ stats.total }}</div>
+    </div>
+    <div class="ck-stat-card">
+      <div class="ck-stat-card__label">প্রকাশিত</div>
+      <div class="ck-stat-card__value ck-stat-card__value--accent">{{ stats.published }}</div>
+    </div>
+    <div class="ck-stat-card">
+      <div class="ck-stat-card__label">খসড়া</div>
+      <div class="ck-stat-card__value">{{ stats.draft }}</div>
+    </div>
+    <div class="ck-stat-card">
+      <div class="ck-stat-card__label">Credits</div>
+      <div class="ck-stat-card__value">{{ stats.credits }}</div>
+    </div>
+    <div class="ck-stat-card">
+      <div class="ck-stat-card__label">মোট পাঠক</div>
+      <div class="ck-stat-card__value ck-stat-card__value--gold">{{ stats.views }}</div>
+    </div>
+  </div>
+
+  <div class="ck-posts-table-wrap">
+    <div class="ck-posts-table-head">
+      <span class="ck-posts-table-head__title">আমার সংবাদসমূহ</span>
+      {% if account_profile.can_write %}
+      <a href="{% url 'accounts:post_create' %}" class="ck-btn ck-btn--primary ck-btn--sm">
+        + নতুন
+      </a>
+      {% endif %}
+    </div>
+
+    {% if my_posts %}
+    <div style="overflow-x:auto;">
+      <table class="ck-table">
+        <thead>
+          <tr>
+            <th>শিরোনাম</th>
+            <th>অবস্থা</th>
+            <th>তারিখ</th>
+            <th>পাঠক</th>
+            <th>পদক্ষেপ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in my_posts %}
+          <tr>
+            <td class="ck-table__title">
+              <a href="{% url 'core:post_detail' slug=post.slug %}" target="_blank">
+                {{ post.title|truncatechars:60 }}
+              </a>
+            </td>
+            <td>
+              {% if post.status == 'published' %}
+                <span class="ck-badge ck-badge--published">প্রকাশিত</span>
+              {% else %}
+                <span class="ck-badge ck-badge--draft">খসড়া</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;color:var(--ck-ink-faint);font-size:.76rem;">
+              {{ post.published_at|date:"d M Y"|default:post.created_at|date:"d M Y" }}
+            </td>
+            <td style="font-weight:600;color:var(--ck-ink);">
+              {{ post.views_count }}
+            </td>
+            <td>
+              <div class="ck-table__actions">
+                <a href="{% url 'accounts:post_edit' pk=post.pk %}"
+                   class="ck-btn ck-btn--secondary ck-btn--sm">সম্পাদনা</a>
+                <a href="{% url 'core:post_detail' slug=post.slug %}" target="_blank"
+                   class="ck-btn ck-btn--ghost ck-btn--sm" title="দেখুন">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </a>
+                <form method="post" action="{% url 'accounts:post_delete' pk=post.pk %}"
+                      onsubmit="return confirm('সত্যিই মুছে ফেলতে চান?')" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="ck-btn ck-btn--ghost ck-btn--sm"
+                          title="মুছুন" style="color:var(--ck-accent);">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ck-dashboard-empty">
+      <div class="ck-dashboard-empty__icon">📝</div>
+      <p class="ck-dashboard-empty__text">আপনি এখনো কোনো সংবাদ লেখেননি।</p>
+      {% if account_profile.can_write %}
+      <a href="{% url 'accounts:post_create' %}" class="ck-btn ck-btn--primary" style="display:inline-flex;">
+        প্রথম সংবাদ লিখুন
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

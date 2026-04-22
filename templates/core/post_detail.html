@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_description %}{{ post.display_excerpt|truncatechars:160 }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/post_detail.css' %}" />
+<style>
+  /* Reading progress bar */
+  #ckReadingProgress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: var(--ck-accent);
+    z-index: 9998;
+    transition: width .1s linear;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+<div id="ckReadingProgress" role="progressbar" aria-hidden="true"></div>
+
+<div class="ck-container">
+  <div class="ck-detail-layout">
+
+    <article class="ck-detail-article"
+             id="post-{{ post.slug }}"
+             data-ck-post-title="{{ post.title }}"
+             data-ck-post-url="{% url 'core:post_detail' slug=post.slug %}"
+             data-ck-post-tags="{% for t in post.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+      <nav class="ck-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'core:home' %}">প্রচ্ছদ</a>
+        <span class="ck-breadcrumb__sep">›</span>
+        {% if post.tags.first %}
+          <a href="{% url 'core:tag_feed' tag=post.tags.first.slug %}">{{ post.tags.first.name }}</a>
+          <span class="ck-breadcrumb__sep">›</span>
+        {% endif %}
+        <span>{{ post.title|truncatechars:40 }}</span>
+      </nav>
+
+      <header class="ck-article-header">
+        {% if post.tags.all %}
+        <div class="ck-article-header__tags">
+          {% for tag in post.tags.all %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ck-tag">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <h1 class="ck-article-header__title">{{ post.title }}</h1>
+
+        {% if post.excerpt %}
+        <p class="ck-article-header__excerpt">{{ post.excerpt }}</p>
+        {% endif %}
+
+        <div class="ck-article-header__meta ck-meta">
+          <span class="ck-meta-author">
+            {% if post.author.reporter_profile.photo %}
+              <img class="ck-meta-avatar" src="{{ post.author.reporter_profile.photo.url }}" alt="{{ post.author.get_full_name }}" />
+            {% else %}
+              <span class="ck-meta-avatar-placeholder">{{ post.author.get_full_name|default:post.author.username|slice:":1"|upper }}</span>
+            {% endif %}
+            {{ post.author.get_full_name|default:post.author.username }}
+          </span>
+          <span class="ck-meta-dot"></span>
+          <span class="ck-meta-date">{{ post.published_at|date:"d M Y, H:i" }}</span>
+          <span class="ck-meta-dot"></span>
+          <span class="ck-meta-read">{{ post.reading_time }} মিনিট পড়া</span>
+          <span class="ck-meta-dot"></span>
+          <span class="ck-meta-views">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            {{ post.views_count }}
+          </span>
+        </div>
+      </header>
+
+      <div class="ck-article-share" aria-label="শেয়ার করুন">
+        <span class="ck-article-share__label">শেয়ার</span>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+           target="_blank" rel="noopener noreferrer" class="ck-share-btn" aria-label="ফেসবুকে শেয়ার">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          ফেসবুক
+        </a>
+        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}"
+           target="_blank" rel="noopener noreferrer" class="ck-share-btn" aria-label="টুইটারে শেয়ার">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          টুইটার
+        </a>
+        <button class="ck-share-btn ck-share-btn--copy" id="ckCopyLink" aria-label="লিঙ্ক কপি করুন">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span class="ck-share-btn__label">লিঙ্ক কপি</span>
+        </button>
+      </div>
+
+      {% if post.cover_image %}
+      <figure class="ck-article-cover">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="eager" />
+      </figure>
+      {% endif %}
+      <div class="ck-article-body">
+        {{ post.content|linebreaks }}
+      </div>
+
+      <footer class="ck-article-footer">
+        {% if post.tags.all %}
+        <div class="ck-article-footer__tags">
+          {% for tag in post.tags.all %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ck-tag">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="ck-article-footer__author-card">
+          {% if post.author.reporter_profile.photo %}
+            <img class="ck-article-footer__author-avatar"
+                 src="{{ post.author.reporter_profile.photo.url }}"
+                 alt="{{ post.author.get_full_name }}" />
+          {% else %}
+            <div class="ck-article-footer__author-placeholder">
+              {{ post.author.get_full_name|default:post.author.username|slice:":1"|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <div class="ck-article-footer__author-name">
+              {{ post.author.get_full_name|default:post.author.username }}
+            </div>
+            {% if post.author.reporter_profile.bio %}
+            <div class="ck-article-footer__author-bio">{{ post.author.reporter_profile.bio }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </footer>
+
+    </article>
+
+    <aside class="ck-detail-sidebar">
+
+      {% if related_posts %}
+      <div class="ck-sidebar-block">
+        <div class="ck-sidebar-title">সম্পর্কিত সংবাদ</div>
+        <div class="ck-sidebar-list">
+          {% for rp in related_posts %}
+          <div class="ck-sidebar-item">
+            <span class="ck-sidebar-item__num">{{ forloop.counter }}</span>
+            <div class="ck-sidebar-item__body">
+              <a href="{% url 'core:post_detail' slug=rp.slug %}"
+                 class="ck-sidebar-item__title"
+                 data-ck-post-title="{{ rp.title }}"
+                 data-ck-post-url="{% url 'core:post_detail' slug=rp.slug %}">
+                {{ rp.title }}
+              </a>
+              <div class="ck-sidebar-item__date">{{ rp.published_at|date:"d M Y" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if popular_tags %}
+      <div class="ck-sidebar-block">
+        <div class="ck-sidebar-title">বিষয় অনুযায়ী</div>
+        <div class="ck-tag-cloud">
+          {% for tag in popular_tags %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ck-tag-chip">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+
+  <div style="padding: 1rem 0 2rem; border-top: 1px solid var(--ck-border);">
+    <a href="{% url 'core:home' %}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--ck-ink-muted);font-family:var(--ck-font-ui);transition:color var(--ck-transition);"
+       onmouseover="this.style.color='var(--ck-accent)'" onmouseout="this.style.color='var(--ck-ink-muted)'">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
+      প্রচ্ছদে ফিরুন
+    </a>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/post_detail.js' %}"></script>
+{% endblock %}

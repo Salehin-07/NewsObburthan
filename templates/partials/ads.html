@@ -1,0 +1,518 @@
+{% load static %}
+{% if site_ads %}
+
+<style>
+/* ── Ad Strip Root ── */
+.oa-strip {
+  --oa-gold:    #c9a84c;
+  --oa-dark:    #1a1a1a;
+  --oa-bg:      #f7f3eb;
+  --oa-border:  #e2d9c8;
+  --oa-radius:  3px;
+  --oa-shadow:  0 6px 32px rgba(0,0,0,0.10);
+
+  width: 100%;
+  background: var(--oa-bg);
+  border-top: 3px solid var(--oa-gold);
+  border-bottom: 1px solid var(--oa-border);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Hind Siliguri', sans-serif;
+}
+
+/* ── Header row ── */
+.oa-strip__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.5rem 0.5rem;
+  border-bottom: 1px solid var(--oa-border);
+  background: var(--oa-dark);
+}
+.oa-strip__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oa-gold);
+}
+.oa-strip__label-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--oa-gold);
+  border-radius: 50%;
+  animation: oa-pulse 2s ease-in-out infinite;
+}
+@keyframes oa-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+.oa-strip__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.oa-strip__btn {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--oa-radius);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1;
+}
+.oa-strip__btn:hover {
+  background: var(--oa-gold);
+  color: var(--oa-dark);
+  border-color: var(--oa-gold);
+}
+.oa-strip__close {
+  font-size: 1rem;
+}
+
+/* ── Viewport / Slider ── */
+.oa-viewport {
+  overflow: hidden;
+  position: relative;
+}
+.oa-track {
+  display: flex;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* ── Single Ad Card ── */
+.oa-card {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0;
+  min-height: 110px;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.oa-card--no-link { cursor: default; }
+
+/* Media side */
+.oa-card__media {
+  width: 180px;
+  height: 110px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--oa-dark);
+  position: relative;
+}
+@media (max-width: 640px) { .oa-card__media { width: 110px; } }
+@media (max-width: 420px) { .oa-card__media { display: none; } }
+
+.oa-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.oa-card:hover .oa-card__img { transform: scale(1.04); }
+
+.oa-card__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* No-media placeholder */
+.oa-card__media--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2e2a22 100%);
+}
+.oa-card__media--empty::after {
+  content: '◈';
+  font-size: 2rem;
+  color: var(--oa-gold);
+  opacity: 0.4;
+}
+
+/* Text body */
+.oa-card__body {
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+}
+.oa-card__ad-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oa-gold);
+  opacity: 0.85;
+}
+.oa-card__title {
+  font-family: 'DM Serif Display', 'Playfair Display', serif;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  font-weight: 400;
+  color: var(--oa-dark);
+  line-height: 1.3;
+  margin: 0;
+}
+.oa-card__desc {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* CTA side */
+.oa-card__cta-wrap {
+  padding: 1rem 1.25rem 1rem 0.5rem;
+  display: flex;
+  align-items: center;
+}
+.oa-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--oa-dark);
+  background: var(--oa-gold);
+  padding: 0.5rem 1rem;
+  border-radius: var(--oa-radius);
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  letter-spacing: 0.02em;
+}
+.oa-card__cta:hover {
+  background: var(--oa-dark);
+  color: var(--oa-gold);
+}
+.oa-card__cta svg { flex-shrink: 0; }
+@media (max-width: 560px) {
+  .oa-card__cta-wrap { display: none; }
+}
+
+/* ── Progress bar ── */
+.oa-progress {
+  height: 2px;
+  background: var(--oa-border);
+  position: relative;
+  overflow: hidden;
+}
+.oa-progress__bar {
+  height: 100%;
+  background: var(--oa-gold);
+  width: 0%;
+  transition: width linear;
+}
+
+/* ── Dots ── */
+.oa-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: var(--oa-dark);
+}
+.oa-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: background 0.25s, transform 0.25s;
+  border: none;
+  padding: 0;
+}
+.oa-dot--active {
+  background: var(--oa-gold);
+  transform: scale(1.4);
+}
+
+/* ── Dismissed state ── */
+.oa-strip--dismissed {
+  max-height: 0;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+}
+</style>
+
+<div class="oa-strip" id="oaStrip" role="region" aria-label="বিজ্ঞাপন">
+
+  <!-- Header -->
+  <div class="oa-strip__header">
+    <div class="oa-strip__label">
+      <span class="oa-strip__label-dot"></span>
+      বিজ্ঞাপন
+    </div>
+    <div class="oa-strip__controls">
+      <button class="oa-strip__btn" id="oaPrev" aria-label="আগের বিজ্ঞাপন" title="আগে">&#8592;</button>
+      <button class="oa-strip__btn" id="oaPause" aria-label="বিরতি" title="বিরতি/চালু">&#9646;&#9646;</button>
+      <button class="oa-strip__btn" id="oaNext" aria-label="পরের বিজ্ঞাপন" title="পরে">&#8594;</button>
+      <button class="oa-strip__btn oa-strip__close" id="oaClose" aria-label="বন্ধ করুন" title="বন্ধ করুন">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- Slider viewport -->
+  <div class="oa-viewport">
+    <div class="oa-track" id="oaTrack">
+
+      {% for ad in site_ads %}
+      {% if ad.redirect %}
+      <a class="oa-card"
+         href="{{ ad.redirect }}"
+         target="_blank"
+         rel="noopener noreferrer sponsored"
+         data-show-every="{{ ad.show_every }}"
+         aria-label="{{ ad.title }}">
+      {% else %}
+      <div class="oa-card oa-card--no-link"
+           data-show-every="{{ ad.show_every }}"
+           aria-label="{{ ad.title }}">
+      {% endif %}
+
+        <!-- Media -->
+        <div class="oa-card__media {% if not ad.image and not ad.video %}oa-card__media--empty{% endif %}">
+          {% if ad.video %}
+            <video class="oa-card__video" autoplay muted loop playsinline>
+              <source src="{{ ad.video }}" type="video/mp4" />
+            </video>
+          {% elif ad.image %}
+            <img class="oa-card__img" src="{{ ad.image }}" alt="{{ ad.title }}" loading="lazy" />
+          {% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="oa-card__body">
+          <span class="oa-card__ad-tag">বিজ্ঞাপন</span>
+          <p class="oa-card__title">{{ ad.title }}</p>
+          {% if ad.description %}
+          <p class="oa-card__desc">{{ ad.description }}</p>
+          {% endif %}
+        </div>
+
+        <!-- CTA -->
+        {% if ad.redirect %}
+        <div class="oa-card__cta-wrap">
+          <span class="oa-card__cta">
+            বিস্তারিত দেখুন
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+        </div>
+        {% endif %}
+
+      {% if ad.redirect %}</a>{% else %}</div>{% endif %}
+      {% endfor %}
+
+    </div><!-- /oa-track -->
+  </div><!-- /oa-viewport -->
+
+  <!-- Progress bar -->
+  <div class="oa-progress"><div class="oa-progress__bar" id="oaProgressBar"></div></div>
+
+  <!-- Dots -->
+  {% if site_ads|length > 1 %}
+  <div class="oa-dots" id="oaDots" aria-label="বিজ্ঞাপন নির্বাচক">
+    {% for ad in site_ads %}
+    <button class="oa-dot {% if forloop.first %}oa-dot--active{% endif %}"
+            data-idx="{{ forloop.counter0 }}"
+            aria-label="বিজ্ঞাপন {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div><!-- /oa-strip -->
+
+<script>
+(function () {
+  'use strict';
+
+  const strip    = document.getElementById('oaStrip');
+  const track    = document.getElementById('oaTrack');
+  const prevBtn  = document.getElementById('oaPrev');
+  const nextBtn  = document.getElementById('oaNext');
+  const pauseBtn = document.getElementById('oaPause');
+  const closeBtn = document.getElementById('oaClose');
+  const progBar  = document.getElementById('oaProgressBar');
+  const dotsWrap = document.getElementById('oaDots');
+
+  if (!strip || !track) return;
+
+  const cards    = Array.from(track.querySelectorAll('.oa-card'));
+  const total    = cards.length;
+  if (total === 0) return;
+
+  // ── Per-card show_every values (randomised between 5–20) ──
+  const showEvery = cards.map(c => {
+    const v = parseInt(c.dataset.showEvery, 10) || 7;
+    // Add ±2 jitter so not all ads fire on the same post
+    return Math.max(5, Math.min(20, v + Math.floor(Math.random() * 5) - 2));
+  });
+
+  let current  = 0;
+  let paused   = false;
+  let timer    = null;
+  let progTimer = null;
+  const DURATION = 6000; // ms per slide
+
+  // ── Helpers ──
+  function goTo(idx) {
+    current = (idx + total) % total;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    updateDots();
+    resetProgress();
+  }
+
+  function updateDots() {
+    if (!dotsWrap) return;
+    dotsWrap.querySelectorAll('.oa-dot').forEach((d, i) => {
+      d.classList.toggle('oa-dot--active', i === current);
+    });
+  }
+
+  function resetProgress() {
+    progBar.style.transition = 'none';
+    progBar.style.width = '0%';
+    // Force reflow
+    void progBar.offsetWidth;
+    progBar.style.transition = `width ${DURATION}ms linear`;
+    progBar.style.width = '100%';
+  }
+
+  function startAuto() {
+    clearInterval(timer);
+    if (total <= 1) return;
+    timer = setInterval(() => {
+      if (!paused) goTo(current + 1);
+    }, DURATION);
+    resetProgress();
+  }
+
+  function stopProgress() {
+    progBar.style.transition = 'none';
+    // Freeze at current width
+    const computed = getComputedStyle(progBar).width;
+    progBar.style.width = computed;
+  }
+
+  // ── Init ──
+  goTo(0);
+  startAuto();
+
+  // ── Controls ──
+  prevBtn && prevBtn.addEventListener('click', () => { goTo(current - 1); startAuto(); });
+  nextBtn && nextBtn.addEventListener('click', () => { goTo(current + 1); startAuto(); });
+
+  pauseBtn && pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;';
+    pauseBtn.title     = paused ? 'চালু করুন' : 'বিরতি';
+    if (paused) stopProgress();
+    else { resetProgress(); }
+  });
+
+  closeBtn && closeBtn.addEventListener('click', () => {
+    clearInterval(timer);
+    strip.style.transition = 'max-height 0.4s ease, border 0.4s ease, padding 0.4s ease';
+    strip.style.maxHeight  = strip.scrollHeight + 'px';
+    void strip.offsetWidth;
+    strip.style.maxHeight  = '0';
+    strip.style.overflow   = 'hidden';
+    strip.style.borderTop  = 'none';
+    strip.style.borderBottom = 'none';
+    // Store dismissal in sessionStorage — won't re-show this session
+    try { sessionStorage.setItem('oa_dismissed', '1'); } catch(e) {}
+  });
+
+  // ── Dot clicks ──
+  dotsWrap && dotsWrap.addEventListener('click', e => {
+    const dot = e.target.closest('.oa-dot');
+    if (!dot) return;
+    goTo(parseInt(dot.dataset.idx, 10));
+    startAuto();
+  });
+
+  // ── Pause on hover ──
+  strip.addEventListener('mouseenter', () => { paused = true;  stopProgress(); });
+  strip.addEventListener('mouseleave', () => { paused = false; resetProgress(); });
+
+  // ── Session-based dismissal memory ──
+  try {
+    if (sessionStorage.getItem('oa_dismissed') === '1') {
+      strip.style.display = 'none';
+    }
+  } catch(e) {}
+
+  // ── "Every N posts" injection (for news list pages) ──
+  // If you have a news list container, inject ad cards between posts.
+  // Looks for .ck-post-list or .ck-home-feed and inserts ad banners.
+  function injectIntoFeed() {
+    const feed = document.querySelector('.ck-post-list, .ck-home-feed, [data-ad-feed]');
+    if (!feed) return;
+
+    const postItems = Array.from(feed.children).filter(el =>
+      el.matches('article, .post-item, .news-item, [data-post], li')
+    );
+    if (postItems.length < 5) return;
+
+    // Collect ads that have a show_every value
+    const adsToInject = cards.map((card, i) => ({
+      node:      card.cloneNode(true),
+      every:     showEvery[i],
+      lastShown: 0,
+    }));
+
+    let adCursor = 0;
+    postItems.forEach((item, idx) => {
+      if (idx === 0) return;
+      const ad = adsToInject[adCursor % adsToInject.length];
+      if (idx % ad.every === 0) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'oa-feed-inject';
+        wrapper.style.cssText = [
+          'border-top:2px solid #c9a84c',
+          'border-bottom:1px solid #e2d9c8',
+          'background:#f7f3eb',
+          'margin:1rem 0',
+        ].join(';');
+        const clone = ad.node.cloneNode(true);
+        wrapper.appendChild(clone);
+        item.parentNode.insertBefore(wrapper, item);
+        adCursor++;
+      }
+    });
+  }
+
+  // Run after DOM is fully painted
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectIntoFeed);
+  } else {
+    injectIntoFeed();
+  }
+
+})();
+</script>
+{% endif %}

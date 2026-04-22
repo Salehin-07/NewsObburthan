@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}যোগাযোগ{% endblock %}
+{% block meta_description %}দৈনিক অভ্যুত্থান পত্রিকার সাথে যোগাযোগ করুন — আপনার মতামত, অভিযোগ বা পরামর্শ পাঠান।{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contact.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<section class="ct-hero">
+  <div class="ct-hero__inner">
+    <span class="ct-hero__label">যোগাযোগ</span>
+    <h1 class="ct-hero__title">আমাদের সাথে কথা বলুন</h1>
+    <p class="ct-hero__sub">আপনার মতামত, তথ্য বা অভিযোগ আমাদের কাছে পৌঁছে দিন।<br>আমরা সর্বদা পাঠকের কথা শুনি।</p>
+  </div>
+  <div class="ct-hero__rule"></div>
+</section>
+
+<!-- Main Grid -->
+<section class="ct-body">
+  <div class="ct-body__grid">
+
+    <!-- Left: Contact Info -->
+    <aside class="ct-info">
+      <div class="ct-info__card">
+        <div class="ct-info__logo-wrap">
+          <img src="{% static 'img/logo.png' %}" alt="দৈনিক অভ্যুত্থান লোগো" class="ct-info__logo" />
+        </div>
+        <h2 class="ct-info__name">দৈনিক অভ্যুত্থান</h2>
+        <p class="ct-info__tagline">সত্যের পক্ষে, মানুষের পক্ষে</p>
+
+        <div class="ct-info__divider"></div>
+
+        <div class="ct-info__editor">
+          <span class="ct-info__editor-label">সম্পাদক</span>
+          <span class="ct-info__editor-name">মো আবু সালেহীন</span>
+        </div>
+
+        <div class="ct-info__divider"></div>
+
+        <ul class="ct-info__list">
+          <li class="ct-info__item">
+            <span class="ct-info__icon">✉</span>
+            <div>
+              <span class="ct-info__item-label">ইমেইল</span>
+              <a href="mailto:editor@abhyuthan.com.bd" class="ct-info__item-val">editor@abhyuthan.com.bd</a>
+            </div>
+          </li>
+          <li class="ct-info__item">
+            <span class="ct-info__icon">✆</span>
+            <div>
+              <span class="ct-info__item-label">ফোন</span>
+              <a href="tel:+8801XXXXXXXXX" class="ct-info__item-val">+৮৮০-১XXX-XXXXXX</a>
+            </div>
+          </li>
+          <li class="ct-info__item">
+            <span class="ct-info__icon">⌂</span>
+            <div>
+              <span class="ct-info__item-label">ঠিকানা</span>
+              <span class="ct-info__item-val">ঢাকা, বাংলাদেশ</span>
+            </div>
+          </li>
+          <li class="ct-info__item">
+            <span class="ct-info__icon">◷</span>
+            <div>
+              <span class="ct-info__item-label">কার্যালয়ের সময়</span>
+              <span class="ct-info__item-val">শনি–বৃহস্পতি, সকাল ৯টা – বিকাল ৬টা</span>
+            </div>
+          </li>
+        </ul>
+
+        <div class="ct-info__divider"></div>
+
+        <div class="ct-info__social">
+          <span class="ct-info__social-label">সোশ্যাল মিডিয়া</span>
+          <div class="ct-info__social-links">
+            <a href="#" class="ct-info__social-link">ফেসবুক</a>
+            <a href="#" class="ct-info__social-link">ইউটিউব</a>
+            <a href="#" class="ct-info__social-link">টুইটার</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Contact Form -->
+    <div class="ct-form-wrap">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="ct-alert ct-alert--{{ message.tags }}">
+            <span class="ct-alert__icon">{% if message.tags == 'success' %}✓{% else %}✕{% endif %}</span>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="ct-form-header">
+        <h2 class="ct-form-header__title">বার্তা পাঠান</h2>
+        <p class="ct-form-header__desc">নিচের ফর্মটি পূরণ করুন। আমরা যত দ্রুত সম্ভব আপনার সাথে যোগাযোগ করব।</p>
+      </div>
+
+      <form class="ct-form" method="post" action="{% url 'core:contact' %}" novalidate>
+        {% csrf_token %}
+
+        <div class="ct-form__row ct-form__row--2col">
+          <div class="ct-form__group">
+            <label class="ct-form__label" for="name">আপনার নাম <span class="ct-form__req">*</span></label>
+            <input
+              class="ct-form__input{% if form.name.errors %} ct-form__input--error{% endif %}"
+              type="text"
+              id="name"
+              name="name"
+              placeholder="পূর্ণ নাম লিখুন"
+              value="{{ form.name.value|default:'' }}"
+              required
+            />
+            {% if form.name.errors %}
+              <span class="ct-form__error">{{ form.name.errors|join:", " }}</span>
+            {% endif %}
+          </div>
+
+          <div class="ct-form__group">
+            <label class="ct-form__label" for="phone">মোবাইল নম্বর</label>
+            <input
+              class="ct-form__input{% if form.phone.errors %} ct-form__input--error{% endif %}"
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="০১XXXXXXXXX"
+              value="{{ form.phone.value|default:'' }}"
+            />
+            {% if form.phone.errors %}
+              <span class="ct-form__error">{{ form.phone.errors|join:", " }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="ct-form__group">
+          <label class="ct-form__label" for="email">ইমেইল ঠিকানা <span class="ct-form__req">*</span></label>
+          <input
+            class="ct-form__input{% if form.email.errors %} ct-form__input--error{% endif %}"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="example@email.com"
+            value="{{ form.email.value|default:'' }}"
+            required
+          />
+          {% if form.email.errors %}
+            <span class="ct-form__error">{{ form.email.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        <div class="ct-form__group">
+          <label class="ct-form__label" for="subject">বিষয় <span class="ct-form__req">*</span></label>
+          <select class="ct-form__select{% if form.subject.errors %} ct-form__input--error{% endif %}" id="subject" name="subject" required>
+            <option value="" disabled {% if not form.subject.value %}selected{% endif %}>বিষয় নির্বাচন করুন</option>
+            <option value="সংবাদ পাঠান" {% if form.subject.value == 'সংবাদ পাঠান' %}selected{% endif %}>সংবাদ পাঠান</option>
+            <option value="মতামত / মন্তব্য" {% if form.subject.value == 'মতামত / মন্তব্য' %}selected{% endif %}>মতামত / মন্তব্য</option>
+            <option value="তথ্য সংশোধন" {% if form.subject.value == 'তথ্য সংশোধন' %}selected{% endif %}>তথ্য সংশোধন</option>
+            <option value="বিজ্ঞাপন সংক্রান্ত" {% if form.subject.value == 'বিজ্ঞাপন সংক্রান্ত' %}selected{% endif %}>বিজ্ঞাপন সংক্রান্ত</option>
+            <option value="অভিযোগ" {% if form.subject.value == 'অভিযোগ' %}selected{% endif %}>অভিযোগ</option>
+            <option value="অন্যান্য" {% if form.subject.value == 'অন্যান্য' %}selected{% endif %}>অন্যান্য</option>
+          </select>
+          {% if form.subject.errors %}
+            <span class="ct-form__error">{{ form.subject.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        <div class="ct-form__group">
+          <label class="ct-form__label" for="message">আপনার বার্তা <span class="ct-form__req">*</span></label>
+          <textarea
+            class="ct-form__textarea{% if form.message.errors %} ct-form__input--error{% endif %}"
+            id="message"
+            name="message"
+            rows="7"
+            placeholder="আপনার বার্তা এখানে লিখুন..."
+            required
+          >{{ form.message.value|default:'' }}</textarea>
+          {% if form.message.errors %}
+            <span class="ct-form__error">{{ form.message.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        <div class="ct-form__footer">
+          <span class="ct-form__note"><span class="ct-form__req">*</span> চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক।</span>
+          <button type="submit" class="ct-form__submit">
+            <span>বার্তা পাঠান</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

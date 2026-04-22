@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════════════════════════════
+   ছাত্রকন্ঠ — Post Detail Page
+   post_detail.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Layout ── */
+.ck-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 3rem;
+  padding: 2.5rem 0 4rem;
+  align-items: start;
+}
+.ck-detail-article { min-width: 0; }
+.ck-detail-sidebar {
+  position: sticky;
+  top: 54px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Breadcrumb ── */
+.ck-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .72rem;
+  color: var(--ck-ink-faint);
+  font-family: var(--ck-font-ui);
+  margin-bottom: 1.5rem;
+}
+.ck-breadcrumb a { color: var(--ck-ink-muted); transition: color var(--ck-transition); }
+.ck-breadcrumb a:hover { color: var(--ck-accent); }
+.ck-breadcrumb__sep { color: var(--ck-border-dark); }
+
+/* ── Article header ── */
+.ck-article-header { margin-bottom: 1.75rem; }
+.ck-article-header__tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .9rem; }
+.ck-article-header__title {
+  font-family: var(--ck-font-display);
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ck-ink);
+  margin-bottom: 1rem;
+}
+.ck-article-header__excerpt {
+  font-family: var(--ck-font-serif);
+  font-size: 1.05rem;
+  color: var(--ck-ink-muted);
+  line-height: 1.8;
+  border-left: 3px solid var(--ck-accent);
+  padding-left: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+.ck-article-header__meta { margin-bottom: 1.5rem; }
+
+/* Share bar */
+.ck-article-share {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .9rem 0;
+  border-top: 1px solid var(--ck-border);
+  border-bottom: 1px solid var(--ck-border);
+  margin-bottom: 1.75rem;
+}
+.ck-article-share__label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ck-ink-faint);
+  font-family: var(--ck-font-ui);
+  margin-right: .25rem;
+}
+.ck-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .35rem .8rem;
+  border: 1px solid var(--ck-border);
+  border-radius: 99px;
+  font-size: .72rem;
+  font-family: var(--ck-font-ui);
+  color: var(--ck-ink-soft);
+  background: #fff;
+  transition: all var(--ck-transition);
+}
+.ck-share-btn:hover { border-color: var(--ck-border-dark); background: var(--ck-paper-warm); }
+.ck-share-btn svg { width: 13px; height: 13px; }
+.ck-share-btn--copy.is-copied { color: #16a34a; border-color: #16a34a; }
+
+/* ── Cover image ── */
+.ck-article-cover {
+  width: 100%;
+  border-radius: var(--ck-radius-md);
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background: var(--ck-paper-mid);
+  margin-bottom: 1.75rem;
+}
+.ck-article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ck-article-cover__caption {
+  font-size: .72rem;
+  color: var(--ck-ink-faint);
+  text-align: center;
+  padding: .5rem 0 0;
+  font-family: var(--ck-font-ui);
+  font-style: italic;
+}
+
+/* ── Article body typography ── */
+.ck-article-body {
+  font-family: var(--ck-font-serif);
+  font-size: 1.02rem;
+  line-height: 1.9;
+  color: var(--ck-ink-soft);
+}
+.ck-article-body p { margin-bottom: 1.4em; }
+.ck-article-body h2 {
+  font-family: var(--ck-font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ck-ink);
+  margin: 2em 0 .75em;
+  line-height: 1.3;
+}
+.ck-article-body h3 {
+  font-family: var(--ck-font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ck-ink);
+  margin: 1.6em 0 .6em;
+}
+.ck-article-body blockquote {
+  border-left: 3px solid var(--ck-accent);
+  padding: .75rem 1.25rem;
+  margin: 1.75em 0;
+  background: var(--ck-paper-warm);
+  border-radius: 0 var(--ck-radius) var(--ck-radius) 0;
+  font-size: 1.05rem;
+  color: var(--ck-ink-muted);
+  font-style: italic;
+}
+.ck-article-body ul,
+.ck-article-body ol {
+  margin: 1em 0 1.4em 1.5rem;
+  list-style: disc;
+}
+.ck-article-body ol { list-style: decimal; }
+.ck-article-body li { margin-bottom: .4em; }
+.ck-article-body a {
+  color: var(--ck-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(181,39,29,.3);
+  transition: text-decoration-color var(--ck-transition);
+}
+.ck-article-body a:hover { text-decoration-color: var(--ck-accent); }
+.ck-article-body strong { color: var(--ck-ink); font-weight: 700; }
+.ck-article-body em { font-style: italic; }
+.ck-article-body img {
+  border-radius: var(--ck-radius-md);
+  margin: 1.5em 0;
+}
+
+/* ── Article footer ── */
+.ck-article-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--ck-border);
+}
+.ck-article-footer__tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.5rem; }
+.ck-article-footer__author-card {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.25rem;
+  background: var(--ck-paper-warm);
+  border-radius: var(--ck-radius-md);
+  border: 1px solid var(--ck-border);
+}
+.ck-article-footer__author-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--ck-paper-mid);
+}
+.ck-article-footer__author-placeholder {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--ck-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ck-ink-muted);
+  flex-shrink: 0;
+}
+.ck-article-footer__author-name {
+  font-family: var(--ck-font-ui);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--ck-ink);
+  margin-bottom: .25rem;
+}
+.ck-article-footer__author-bio {
+  font-size: .78rem;
+  color: var(--ck-ink-muted);
+  line-height: 1.6;
+}
+
+/* ── Related posts ── */
+.ck-related { margin-top: 3rem; }
+.ck-related__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 1060px) {
+  .ck-detail-layout { grid-template-columns: 1fr; }
+  .ck-detail-sidebar { position: static; order: 10; }
+  .ck-related__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .ck-article-header__title { font-size: 1.5rem; }
+  .ck-related__grid { grid-template-columns: 1fr; }
+  .ck-detail-layout { padding: 1.25rem 0 2.5rem; }
+}

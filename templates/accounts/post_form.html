@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_create %}নতুন সংবাদ লিখুন{% else %}সংবাদ সম্পাদনা — {{ post.title|truncatechars:40 }}{% endif %}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/accounts.css' %}" />{% endblock %}
+
+{% block content %}
+<div class="ck-container ck-portal">
+
+  <div class="ck-portal-header">
+    <div class="ck-portal-header__left">
+      <nav class="ck-portal-breadcrumb">
+        <a href="{% url 'core:home' %}">প্রচ্ছদ</a>
+        <span class="ck-portal-breadcrumb__sep">›</span>
+        <a href="{% url 'accounts:dashboard' %}">ড্যাশবোর্ড</a>
+        <span class="ck-portal-breadcrumb__sep">›</span>
+        <span>{% if is_create %}নতুন সংবাদ{% else %}সম্পাদনা{% endif %}</span>
+      </nav>
+      <h1 class="ck-portal-title">
+        {% if is_create %}নতুন সংবাদ লিখুন{% else %}সংবাদ সম্পাদনা করুন{% endif %}
+      </h1>
+      {% if not is_create %}
+      <p class="ck-portal-subtitle">
+        <span class="ck-badge {% if post.status == 'published' %}ck-badge--published{% else %}ck-badge--draft{% endif %}">
+          {% if post.status == 'published' %}প্রকাশিত{% else %}খসড়া{% endif %}
+        </span>
+        &nbsp;·&nbsp; {{ post.updated_at|date:"d M Y, H:i" }}
+      </p>
+      {% endif %}
+    </div>
+    <div class="ck-portal-header__actions">
+      <a href="{% url 'accounts:dashboard' %}" class="ck-btn ck-btn--secondary ck-btn--sm">← বাতিল</a>
+      {% if not is_create %}
+        <a href="{% url 'core:post_detail' slug=post.slug %}" target="_blank"
+           class="ck-btn ck-btn--secondary ck-btn--sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          পূর্বরূপ
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" novalidate id="ckPostForm">
+    {% csrf_token %}
+
+    <div class="ck-post-form-layout">
+
+      
+      <div class="ck-post-form-main">
+          
+        
+        {% if form.non_field_errors %}
+          {% for error in form.non_field_errors %}
+            <div class="ck-form-alert" style="margin-bottom:1rem;">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
+
+        
+        <div class="ck-form-group" style="margin-bottom:1.25rem;">
+          <textarea
+            name="{{ form.title.html_name }}"
+            id="{{ form.title.id_for_label }}"
+            class="ck-form-input ck-post-input--title {% if form.title.errors %}is-error{% endif %}"
+            placeholder="সংবাদের শিরোনাম লিখুন…"
+            rows="2"
+            maxlength="300"
+            oninput="updateCounter(this, 'titleCounter', 300)"
+          >{{ form.title.value|default:'' }}</textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.3rem;">
+            {% for err in form.title.errors %}
+              <div class="ck-form-error">{{ err }}</div>
+            {% endfor %}
+            <span class="ck-char-counter" id="titleCounter" style="margin-left:auto;">
+              {{ form.title.value|default:''|length }}/300
+            </span>
+          </div>
+        </div>
+
+        
+        <div class="ck-form-group" style="margin-bottom:1.25rem;">
+          <label for="{{ form.excerpt.id_for_label }}" style="font-size:.72rem;font-weight:600;letter-spacing:.03em;color:var(--ck-ink-muted);font-family:var(--ck-font-ui);margin-bottom:.4rem;display:block;">
+            সারসংক্ষেপ
+            <span style="font-weight:400;color:var(--ck-ink-faint);">(ঐচ্ছিক)</span>
+          </label>
+          <textarea
+            name="{{ form.excerpt.html_name }}"
+            id="{{ form.excerpt.id_for_label }}"
+            class="ck-form-input {% if form.excerpt.errors %}is-error{% endif %}"
+            placeholder="সংক্ষিপ্ত সারাংশ (না লিখলে স্বয়ংক্রিয়ভাবে তৈরি হবে)…"
+            rows="2"
+            maxlength="400"
+            oninput="updateCounter(this, 'excerptCounter', 400)"
+          >{{ form.excerpt.value|default:'' }}</textarea>
+          <div style="display:flex;justify-content:space-between;">
+            <div class="ck-form-hint">{{ form.excerpt.help_text }}</div>
+            <span class="ck-char-counter" id="excerptCounter">
+              {{ form.excerpt.value|default:''|length }}/400
+            </span>
+          </div>
+        </div>
+
+        <div class="ck-form-group">
+          <label for="{{ form.content.id_for_label }}" style="font-size:.72rem;font-weight:600;letter-spacing:.03em;color:var(--ck-ink-muted);font-family:var(--ck-font-ui);margin-bottom:.4rem;display:block;">
+            সংবাদের বিস্তারিত <span style="color:var(--ck-accent);">*</span>
+          </label>
+          <textarea
+            name="{{ form.content.html_name }}"
+            id="{{ form.content.id_for_label }}"
+            class="ck-form-input ck-post-input--body {% if form.content.errors %}is-error{% endif %}"
+            placeholder="সংবাদের পূর্ণ বিবরণ লিখুন…"
+            rows="20"
+          >{{ form.content.value|default:'' }}</textarea>
+          {% for err in form.content.errors %}
+            <div class="ck-form-error">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+      </div>
+      
+      <div class="ck-post-form-side">
+
+        <div class="ck-form-card">
+          <div class="ck-form-card__head">
+            <span class="ck-form-card__head-title">প্রকাশনা</span>
+          </div>
+          <div class="ck-form-card__body" style="padding:1rem;">
+
+            {% if form.status.field.widget.input_type != 'hidden' %}
+            <div class="ck-form-group" style="margin-bottom:.85rem;">
+              <label style="font-size:.7rem;font-weight:600;letter-spacing:.08em;color:var(--ck-ink-muted);font-family:var(--ck-font-ui);margin-bottom:.4rem;display:block;">
+                অবস্থা
+              </label>
+              <select name="{{ form.status.html_name }}"
+                      id="{{ form.status.id_for_label }}"
+                      class="ck-post-select">
+                {% for val, label in form.fields.status.choices %}
+                  <option value="{{ val }}" {% if form.status.value == val %}selected{% endif %}>
+                    {% if val == 'published' %}✓ প্রকাশিত{% else %}✎ খসড়া{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+              <div class="ck-form-hint" style="margin-top:.4rem;">{{ form.fields.status.help_text }}</div>
+            </div>
+            {% else %}
+              {{ form.status }}
+              <div class="ck-form-alert ck-form-alert--info" style="font-size:.75rem;margin:0 0 .5rem;">
+                সাংবাদিক হিসেবে আপনি শুধু খসড়া সংরক্ষণ করতে পারবেন।
+                একজন সম্পাদক প্রকাশ করবেন।
+              </div>
+            {% endif %}
+
+            <button type="submit" name="_save" class="ck-btn ck-btn--primary" style="width:100%;margin-bottom:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              সংরক্ষণ করুন
+            </button>
+
+            {% if not is_create %}
+            <form method="post" action="{% url 'accounts:post_delete' pk=post.pk %}"
+                  onsubmit="return confirm('সত্যিই এই সংবাদটি মুছে ফেলতে চান?')" style="margin-top:.25rem;">
+              {% csrf_token %}
+              <button type="submit" class="ck-btn ck-btn--danger ck-btn--sm" style="width:100%;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                মুছে ফেলুন
+              </button>
+            </form>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <div class="ck-form-card">
+          <div class="ck-form-card__head">
+            <span class="ck-form-card__head-title">কভার ছবি</span>
+          </div>
+          <div class="ck-form-card__body" style="padding:1rem;">
+            <div class="ck-cover-preview {% if post.cover_image %}has-image{% endif %}" id="coverPreview">
+              {% if not is_create and post.cover_image %}
+                <img src="{{ post.cover_image.url }}" alt="কভার" id="coverImg" />
+              {% else %}
+                <span id="coverPlaceholder">🖼</span>
+              {% endif %}
+            </div>
+            <label for="{{ form.cover_image.id_for_label }}" class="ck-file-label" style="width:100%;justify-content:center;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              ছবি আপলোড করুন
+            </label>
+            <input type="file"
+                   id="{{ form.cover_image.id_for_label }}"
+                   name="{{ form.cover_image.html_name }}"
+                   accept="image/*"
+                   class="ck-hidden-file"
+                   onchange="previewCover(this)" />
+            <div class="ck-form-hint" style="margin-top:.5rem;text-align:center;">
+              JPG, PNG বা WebP · ১৬:৯ অনুপাত বাঞ্ছনীয়
+            </div>
+          </div>
+        </div>
+
+        <div class="ck-form-card">
+          <div class="ck-form-card__head">
+            <span class="ck-form-card__head-title">বিভাগ / ট্যাগ</span>
+          </div>
+          <div class="ck-form-card__body" style="padding:1rem;">
+            {% if form.tags.field.queryset.exists %}
+              <div class="ck-tag-checks">
+                {% for choice in form.tags %}
+                <label class="ck-tag-check">
+                  {{ choice.tag }}
+                  <span>{{ choice.choice_label }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p style="font-size:.8rem;color:var(--ck-ink-faint);">কোনো ট্যাগ তৈরি হয়নি।</p>
+            {% endif %}
+            {% for err in form.tags.errors %}
+              <div class="ck-form-error">{{ err }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div style="font-size:.72rem;color:var(--ck-ink-faint);font-family:var(--ck-font-ui);text-align:center;padding:.25rem;">
+          আনুমানিক পড়ার সময়: <strong id="readTime">—</strong> মিনিট
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ── Char counter ── */
+function updateCounter(textarea, counterId, max) {
+  const len  = textarea.value.length;
+  const el   = document.getElementById(counterId);
+  if (!el) return;
+  el.textContent = `${len}/${max}`;
+  el.className = 'ck-char-counter' +
+    (len > max * .9 ? (len >= max ? ' is-over' : ' is-warn') : '');
+}
+
+/* ── Cover image preview ── */
+function previewCover(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('coverPreview');
+    let img = document.getElementById('coverImg');
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'coverImg';
+      wrap.innerHTML = '';
+      wrap.appendChild(img);
+    }
+    img.src = e.target.result;
+    wrap.classList.add('has-image');
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+/* ── Live reading-time estimate ── */
+const contentArea = document.getElementById('{{ form.content.id_for_label }}');
+const readTimeEl  = document.getElementById('readTime');
+function updateReadTime() {
+  const words   = (contentArea?.value || '').trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  if (readTimeEl) readTimeEl.textContent = minutes;
+}
+contentArea?.addEventListener('input', updateReadTime);
+updateReadTime();
+
+/* ── Warn before leaving with unsaved changes ── */
+let formDirty = false;
+document.getElementById('ckPostForm')?.addEventListener('input', () => { formDirty = true; });
+document.getElementById('ckPostForm')?.addEventListener('submit', () => { formDirty = false; });
+window.addEventListener('beforeunload', e => {
+  if (formDirty) {
+    e.preventDefault();
+    e.returnValue = 'আপনার পরিবর্তনগুলো সংরক্ষণ না করে চলে যাচ্ছেন। নিশ্চিত?';
+  }
+});
+</script>
+{% endblock %}

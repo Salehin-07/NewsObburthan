@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════════
+   ছাত্রকন্ঠ — Footer
+   footer.css
+═══════════════════════════════════════════════════════════════ */
+
+.ckfooter {
+  background: #0f0f0e;
+  color: #b8b4aa;
+  font-family: var(--ck-font-ui);
+  margin-top: auto;
+}
+
+.ckfooter__accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--ck-accent) 0%, var(--ck-gold) 50%, var(--ck-accent) 100%);
+}
+
+.ckfooter__main {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 3rem;
+  padding: 3.5rem 0 2.5rem;
+}
+
+/* Brand column */
+.ckfooter__logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  /* invert logo for dark background if needed */
+  filter: brightness(1) invert(0);
+  opacity: .9;
+  margin-bottom: 1rem;
+}
+.ckfooter__desc {
+  font-size: .84rem;
+  line-height: 1.8;
+  color: #727068;
+  max-width: 28ch;
+  margin-bottom: 1.4rem;
+}
+.ckfooter__social {
+  display: flex;
+  gap: .55rem;
+}
+.ckfooter__social-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid #2a2a28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: border-color var(--ck-transition), color var(--ck-transition), background var(--ck-transition);
+}
+.ckfooter__social-btn:hover {
+  border-color: var(--ck-accent);
+  color: var(--ck-accent);
+  background: rgba(181,39,29,.08);
+}
+.ckfooter__social-btn svg { width: 15px; height: 15px; }
+
+/* Link columns */
+.ckfooter__col-title {
+  font-size: .62rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1.1rem;
+  padding-bottom: .65rem;
+  border-bottom: 1px solid #1f1f1d;
+}
+.ckfooter__col-links {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.ckfooter__col-links a {
+  font-size: .83rem;
+  color: #727068;
+  line-height: 1.4;
+  transition: color var(--ck-transition), padding-left var(--ck-transition);
+}
+.ckfooter__col-links a:hover { color: #ccc; padding-left: .3rem; }
+
+/* Tag cloud */
+.ckfooter__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .38rem;
+}
+.ckfooter__tag {
+  font-size: .7rem;
+  color: #666;
+  border: 1px solid #222;
+  padding: .2rem .6rem;
+  border-radius: 2px;
+  transition: color var(--ck-transition), border-color var(--ck-transition);
+}
+.ckfooter__tag:hover { color: #bbb; border-color: #555; }
+
+/* Bottom bar */
+.ckfooter__bottom {
+  border-top: 1px solid #1a1a18;
+  padding: 1.1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ckfooter__copy {
+  font-size: .73rem;
+  color: #555;
+}
+.ckfooter__copy strong { color: #999; }
+.ckfooter__bottom-links {
+  display: flex;
+  gap: 1.25rem;
+}
+.ckfooter__bottom-links a {
+  font-size: .73rem;
+  color: #555;
+  transition: color var(--ck-transition);
+}
+.ckfooter__bottom-links a:hover { color: #999; }
+
+/* Responsive */
+@media (max-width: 960px) {
+  .ckfooter__main { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+@media (max-width: 560px) {
+  .ckfooter__main { grid-template-columns: 1fr; gap: 1.8rem; padding: 2.5rem 0 2rem; }
+  .ckfooter__bottom { flex-direction: column; text-align: center; }
+}

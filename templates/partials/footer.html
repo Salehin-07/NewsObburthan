@@ -1,0 +1,98 @@
+{# partials/footer.html #}
+{% load static %}
+
+<footer class="ckfooter">
+  <div class="ckfooter__accent-bar"></div>
+
+  <div class="ck-container">
+    <div class="ckfooter__main">
+
+      {# Brand column #}
+      <div>
+        <a href="{% url 'core:home' %}" aria-label="ছাত্রকন্ঠ">
+          <img class="ckfooter__logo"
+               src="{% static 'img/logo.png' %}"
+               alt="ছাত্রকন্ঠ"
+               width="160" height="48" />
+        </a>
+        <p class="ckfooter__desc">
+        বাংলাদেশের জন্য একটি স্বাধীন সংবাদ প্ল্যাটফর্ম।
+          সত্য, নিরপেক্ষ ও দায়িত্বশীল সাংবাদিকতার প্রতিশ্রুতি নিয়ে আমরা কাজ করছি।
+        </p>
+        <div class="ckfooter__social">
+          <a href="#" class="ckfooter__social-btn" aria-label="ফেসবুক">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+          </a>
+          <a href="#" class="ckfooter__social-btn" aria-label="ইউটিউব">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
+              <polygon fill="#0f0f0e" points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
+            </svg>
+          </a>
+          <a href="#" class="ckfooter__social-btn" aria-label="টুইটার / X">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      {# Categories column #}
+      <div>
+        <div class="ckfooter__col-title">বিভাগ</div>
+        <nav class="ckfooter__col-links">
+          <a href="{% url 'core:home' %}">প্রচ্ছদ</a>
+          {% for tag in popular_tags|slice:":8" %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}">{{ tag.name }}</a>
+          {% empty %}
+            <a href="#">জাতীয়</a>
+            <a href="#">আন্তর্জাতিক</a>
+            <a href="#">শিক্ষা</a>
+            <a href="#">ক্যাম্পাস</a>
+          {% endfor %}
+        </nav>
+      </div>
+
+      {# About column #}
+      <div>
+        <div class="ckfooter__col-title">পত্রিকা</div>
+        <nav class="ckfooter__col-links">
+          <a href="#">আমাদের সম্পর্কে</a>
+          <a href="#">সম্পাদকীয় নীতি</a>
+          <a href="#">সাংবাদিক দল</a>
+          <a href="#">বিজ্ঞাপন দিন</a>
+          <a href="#">আর্কাইভ</a>
+          <a href="#">যোগাযোগ</a>
+        </nav>
+      </div>
+
+      {# Tags column #}
+      <div>
+        <div class="ckfooter__col-title">ট্যাগসমূহ</div>
+        <div class="ckfooter__tags">
+          {% for tag in popular_tags %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ckfooter__tag">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>{# /main grid #}
+
+    <div class="ckfooter__bottom">
+      <p class="ckfooter__copy">
+        &copy; <span id="ckFooterYear"></span> <strong>দৈনিক অভ্যুত্থান</strong>। সর্বস্বত্ব সংরক্ষিত।
+      </p>
+<!--       <nav class="ckfooter__bottom-links">
+        <a href="#">গোপনীয়তা নীতি</a>
+        <a href="#">ব্যবহারের শর্তাবলি</a>
+        <a href="#">অভিযোগ</a>
+      </nav> -->
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){ var el=document.getElementById('ckFooterYear'); if(el) el.textContent=new Date().getFullYear(); })();
+</script>

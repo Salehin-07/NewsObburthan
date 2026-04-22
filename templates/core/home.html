@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if active_tag %}{{ active_tag.name }} — সংবাদ{% else %}প্রচ্ছদ{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+  {% if active_tag %}{{ active_tag.name }} বিভাগের সর্বশেষ সংবাদ — ছাত্রকন্ঠ{% else %}ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর। সর্বশেষ সংবাদ, বিশ্লেষণ ও মতামত।{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="ck-container">
+
+  {% if active_tag %}
+  <div class="ck-feed-header">
+    <div class="ck-feed-header__eyebrow">বিভাগ অনুযায়ী ফিল্টার</div>
+    <h1 class="ck-feed-header__title">{{ active_tag.name }}</h1>
+    <p class="ck-feed-header__count">{{ page_obj.paginator.count }} টি সংবাদ পাওয়া গেছে</p>
+  </div>
+  {% endif %}
+
+  <div class="ck-home-layout">
+
+    <div class="ck-home-content">
+
+      {% if page_obj.object_list %}
+
+        {% if not active_tag and page_obj.number == 1 %}
+
+          {% with hero=page_obj.object_list.0 %}
+          <article class="ck-hero"
+                   id="post-{{ hero.slug }}"
+                   data-ck-post-title="{{ hero.title }}"
+                   data-ck-post-url="{% url 'core:post_detail' slug=hero.slug %}"
+                   data-ck-post-tags="{% for t in hero.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+            <a href="{% url 'core:post_detail' slug=hero.slug %}" class="ck-hero__img-wrap" tabindex="-1" aria-hidden="true">
+              {% if hero.cover_image %}
+                <img src="{{ hero.cover_image.url }}" alt="{{ hero.title }}" loading="eager" width="800" height="533" />
+              {% else %}
+                <img src="https://picsum.photos/seed/{{ hero.slug }}/800/533" alt="{{ hero.title }}" loading="eager" width="800" height="533" />
+              {% endif %}
+            </a>
+
+            <div class="ck-hero__body">
+              {% if hero.tags.all %}
+              <div class="ck-hero__tags">
+                {% for tag in hero.tags.all %}
+                  <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ck-tag">{{ tag.name }}</a>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <h2 class="ck-hero__title">
+                <a href="{% url 'core:post_detail' slug=hero.slug %}">{{ hero.title }}</a>
+              </h2>
+
+              <p class="ck-hero__excerpt">{{ hero.display_excerpt }}</p>
+
+              <div class="ck-meta">
+                <span class="ck-meta-author">
+                  {% if hero.author.reporter_profile.photo %}
+                    <img class="ck-meta-avatar" src="{{ hero.author.reporter_profile.photo.url }}" alt="{{ hero.author.get_full_name }}" />
+                  {% else %}
+                    <span class="ck-meta-avatar-placeholder">{{ hero.author.get_full_name|default:hero.author.username|slice:":1"|upper }}</span>
+                  {% endif %}
+                  {{ hero.author.get_full_name|default:hero.author.username }}
+                </span>
+                <span class="ck-meta-dot"></span>
+                <span class="ck-meta-date">{{ hero.published_at|date:"d M Y" }}</span>
+                <span class="ck-meta-dot"></span>
+                <span class="ck-meta-read">{{ hero.reading_time }} মিনিট পড়া</span>
+                <span class="ck-meta-dot"></span>
+                <span class="ck-meta-views">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  {{ hero.views_count }}
+                </span>
+              </div>
+
+              <a href="{% url 'core:post_detail' slug=hero.slug %}" class="ck-hero__read-more">
+                পুরো সংবাদ পড়ুন
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4"/>
+                </svg>
+              </a>
+            </div>
+          </article>
+          {% endwith %}
+
+
+          {% if page_obj.object_list|length > 1 %}
+          <div class="ck-section-rule">
+            <div class="ck-section-rule__accent-bar"></div>
+            <span class="ck-section-rule__label">সর্বশেষ সংবাদ</span>
+            <div class="ck-section-rule__line"></div>
+          </div>
+          <div class="ck-posts-grid">
+            {% for post in page_obj.object_list %}{% if not forloop.first %}{% include 'partials/post_card.html' %}{% endif %}{% endfor %}
+          </div>
+          {% endif %}
+
+        {% else %}
+ 
+        <div class="ck-section-rule">
+          <div class="ck-section-rule__accent-bar"></div>
+          <span class="ck-section-rule__label">
+            {% if active_tag %}{{ active_tag.name }} সংবাদ{% else %}সর্বশেষ সংবাদ{% endif %}
+          </span>
+          <div class="ck-section-rule__line"></div>
+        </div>
+        <div class="ck-posts-grid">
+          {% for post in page_obj.object_list %}{% include 'partials/post_card.html' %}{% endfor %}
+        </div>
+        {% endif %}
+
+      {% else %}
+      <div class="ck-empty">
+        <div class="ck-empty__icon">📰</div>
+        <h2 class="ck-empty__title">
+          {% if active_tag %}এই বিভাগে কোনো সংবাদ নেই{% else %}এখনো কোনো সংবাদ প্রকাশিত হয়নি{% endif %}
+        </h2>
+        <p class="ck-empty__sub">
+          {% if active_tag %}<a href="{% url 'core:home' %}" style="color:var(--ck-accent)">প্রচ্ছদে ফিরুন</a>{% else %}শীঘ্রই সংবাদ প্রকাশিত হবে।{% endif %}
+        </p>
+      </div>
+      {% endif %}
+
+      {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="ck-pagination" aria-label="পৃষ্ঠা নেভিগেশন">
+
+        {% if page_obj.has_previous %}
+          <a class="ck-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="আগের পৃষ্ঠা">‹</a>
+        {% else %}
+          <span class="ck-page-btn is-disabled" aria-hidden="true">‹</span>
+        {% endif %}
+
+        {% with num=page_obj.paginator.num_pages cur=page_obj.number %}
+          {% for i in page_obj.paginator.page_range %}
+            {% if i == 1 or i == num or i >= cur|add:"-2" and i <= cur|add:"2" %}
+              {% if i == cur %}
+                <span class="ck-page-btn is-active" aria-current="page">{{ i }}</span>
+              {% else %}
+                <a class="ck-page-btn" href="?page={{ i }}">{{ i }}</a>
+              {% endif %}
+            {% elif i == cur|add:"-3" or i == cur|add:"3" %}
+              <span class="ck-page-ellipsis" aria-hidden="true">…</span>
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+
+        {% if page_obj.has_next %}
+          <a class="ck-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="পরের পৃষ্ঠা">›</a>
+        {% else %}
+          <span class="ck-page-btn is-disabled" aria-hidden="true">›</span>
+        {% endif %}
+
+        <p class="ck-pagination__info">
+          পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+          &nbsp;·&nbsp; মোট {{ page_obj.paginator.count }} টি সংবাদ
+        </p>
+      </nav>
+      {% endif %}
+
+    </div>
+
+    <aside class="ck-home-sidebar" aria-label="সাইডবার">
+
+      <div class="ck-sidebar-block">
+        <div class="ck-sidebar-title">সর্বাধিক পঠিত</div>
+        <div class="ck-sidebar-list">
+          {% for post in page_obj.object_list|slice:":5" %}
+          <div class="ck-sidebar-item">
+            <span class="ck-sidebar-item__num">{{ forloop.counter }}</span>
+            <div class="ck-sidebar-item__body">
+              <a href="{% url 'core:post_detail' slug=post.slug %}"
+                 class="ck-sidebar-item__title"
+                 data-ck-post-title="{{ post.title }}"
+                 data-ck-post-url="{% url 'core:post_detail' slug=post.slug %}">
+                {{ post.title }}
+              </a>
+              <div class="ck-sidebar-item__date">{{ post.published_at|date:"d M Y" }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <p style="font-size:.8rem;color:var(--ck-ink-faint);padding:.5rem 0;">কোনো সংবাদ নেই।</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if popular_tags %}
+      <div class="ck-sidebar-block">
+        <div class="ck-sidebar-title">বিষয় অনুযায়ী</div>
+        <div class="ck-tag-cloud">
+          {% for tag in popular_tags %}
+            <a href="{% url 'core:tag_feed' tag=tag.slug %}"
+               class="ck-tag-chip {% if active_tag and active_tag.slug == tag.slug %}is-active{% endif %}">
+              {{ tag.name }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}

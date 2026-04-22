@@ -1,0 +1,13 @@
+django
+gunicorn
+whitenoise
+django-pwa
+django-jazzmin
+django-storages[s3]
+pillow
+boto3
+python-dateutil
+six
+psycopg2
+python-dotenv
+dj_database_url

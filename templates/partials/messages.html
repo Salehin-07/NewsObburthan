@@ -1,0 +1,32 @@
+{% if messages %}
+<div class="ck-messages" id="ckMessages" aria-live="polite" aria-label="নোটিফিকেশন">
+  {% for message in messages %}
+  <div class="ck-message ck-message--{{ message.tags }}" role="alert">
+    <span class="ck-message__icon" aria-hidden="true">
+      {% if message.tags == 'success' %}✓
+      {% elif message.tags == 'error' %}✕
+      {% elif message.tags == 'warning' %}⚠
+      {% else %}ℹ{% endif %}
+    </span>
+    <span class="ck-message__text">{{ message }}</span>
+    <button class="ck-message__close" onclick="this.closest('.ck-message').remove()" aria-label="বন্ধ করুন">×</button>
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+/* Auto-dismiss messages after 5 seconds */
+(function () {
+  var msgs = document.getElementById('ckMessages');
+  if (!msgs) return;
+  setTimeout(function () {
+    msgs.querySelectorAll('.ck-message').forEach(function (el) {
+      el.style.transition = 'opacity .4s ease, transform .4s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(12px)';
+      setTimeout(function () { el.remove(); }, 420);
+    });
+  }, 5000);
+})();
+</script>
+{% endif %}

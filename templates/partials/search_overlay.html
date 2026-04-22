@@ -1,0 +1,29 @@
+{# partials/search_overlay.html #}
+<div class="ck-search-overlay"
+     id="ckSearchOverlay"
+     role="dialog"
+     aria-modal="true"
+     aria-label="সংবাদ অনুসন্ধান">
+  <div class="ck-search-box">
+    <div class="ck-search-box__head">
+      <svg class="ck-search-box__icon" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+      </svg>
+      <input
+        class="ck-search-box__input"
+        id="ckSearchInput"
+        type="search"
+        placeholder="শিরোনাম দিয়ে অনুসন্ধান করুন…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-autocomplete="list"
+        aria-controls="ckSearchResults"
+      />
+      <button class="ck-search-box__esc" id="ckSearchClose" aria-label="বন্ধ করুন">ESC</button>
+    </div>
+    <div class="ck-search-box__results" id="ckSearchResults" role="listbox"></div>
+  </div>
+</div>

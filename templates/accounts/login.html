@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}লগইন — কর্মীদের পোর্টাল{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/accounts.css' %}" />{% endblock %}
+
+{% block content %}
+<div class="ck-auth-wrap">
+  <div class="ck-auth-card">
+
+    <div class="ck-auth-card__head">
+      <img class="ck-auth-card__logo" src="{% static 'img/logo.png' %}" alt="ছাত্রকন্ঠ" />
+      <div class="ck-auth-card__title">কর্মী পোর্টালে লগইন</div>
+      <div class="ck-auth-card__subtitle">শুধুমাত্র অনুমোদিত কর্মীদের জন্য</div>
+    </div>
+
+    <div class="ck-auth-card__body">
+
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <div class="ck-form-alert">{{ error }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="ck-form-group">
+          <label for="{{ form.username.id_for_label }}">
+            ব্যবহারকারীর নাম <span class="ck-required">*</span>
+          </label>
+          <input
+            type="text"
+            id="{{ form.username.id_for_label }}"
+            name="{{ form.username.html_name }}"
+            value="{{ form.username.value|default:'' }}"
+            class="ck-form-input {% if form.username.errors %}is-error{% endif %}"
+            placeholder="আপনার ব্যবহারকারীর নাম"
+            autocomplete="username"
+            autofocus
+          />
+          {% for err in form.username.errors %}
+            <div class="ck-form-error">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="ck-form-group">
+          <label for="{{ form.password.id_for_label }}">
+            পাসওয়ার্ড <span class="ck-required">*</span>
+          </label>
+          <input
+            type="password"
+            id="{{ form.password.id_for_label }}"
+            name="{{ form.password.html_name }}"
+            class="ck-form-input {% if form.password.errors %}is-error{% endif %}"
+            placeholder="••••••••••"
+            autocomplete="current-password"
+          />
+          {% for err in form.password.errors %}
+            <div class="ck-form-error">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div class="ck-form-check">
+            <input type="checkbox" id="id_remember_me" name="remember_me"
+                   {% if form.remember_me.value %}checked{% endif %} />
+            <label for="id_remember_me">আমাকে মনে রাখুন</label>
+          </div>
+          <a href="{% url 'accounts:forgot_password' %}"
+             style="font-size:.75rem;color:var(--ck-accent);font-family:var(--ck-font-ui);font-weight:500;">
+            পাসওয়ার্ড ভুলে গেছেন?
+          </a>
+        </div>
+
+        <button type="submit" class="ck-btn ck-btn--primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          লগইন করুন
+        </button>
+      </form>
+    </div>
+
+    <div class="ck-auth-card__footer">
+      <a href="{% url 'core:home' %}">← প্রচ্ছদে ফিরুন</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
