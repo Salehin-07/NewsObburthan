@@ -27,6 +27,9 @@ def _popular_tags():
     ).distinct()
 
 
+def bad_request(request, exception):
+    return render(request, '400.html', status=400)
+
 def home(request):
     """Home page — all published posts, newest first, paginated."""
     posts_qs = (

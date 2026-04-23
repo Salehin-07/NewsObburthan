@@ -29,9 +29,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY','hdjdlpakajsjsfjsjajwuwhh267992knb@@@##
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com']
+ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com','daily-obburthan.nav.bd','www.daily-obburthan.nav.bd']
 
-CSRF_TRUSTED_ORIGINS=['https://daily-obburthan.onrender.com']
+CSRF_TRUSTED_ORIGINS=['https://daily-obburthan.onrender.com','https://daily-obburthan.nav.bd','https://www.daily-obburthan.nav.bd']
 
 # Application definition
 
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'core',
     'accounts.apps.AccountsConfig',
     'pwa',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -173,18 +174,18 @@ else :
   
 
 JAZZMIN_SETTINGS = {
-    'site_title': 'Obburthan Admin',
-    'site_header': 'Obburthan Admin',
-    "site_brand": "Obburthan", 
+    'site_title': 'Obbuthan Admin',
+    'site_header': 'Obbuthan Admin',
+    "site_brand": "Obbuthan", 
     'site_logo': 'img/logo.png',
-    'welcome_sign': 'Voice of Students',
+    'welcome_sign': 'Voice of Bangladesh',
     #"custom_css": "admin/admin.css",  
     #"custom_js": "admin/admin.js", 
     "show_sidebar": True,
 }
 
-PWA_APP_NAME = 'Obburthan'
-PWA_APP_DESCRIPTION = "Obburthan"
+PWA_APP_NAME = 'Obbuthan'
+PWA_APP_DESCRIPTION = "Obbuthan"
 PWA_APP_THEME_COLOR = '#0A0302'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
 PWA_APP_DISPLAY = 'standalone'
@@ -236,13 +237,27 @@ AWS_QUERYSTRING_AUTH = True
 MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.backblazeb2.com/'
 #MEDIA_ROOT = BASE_DIR / 'media'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com' 
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER','')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','')
-DEFAULT_FROM_EMAIL = ' Obburthan Info <info.Obburtham@gmail.com>'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com' 
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER','')
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','')
+# DEFAULT_FROM_EMAIL = ' Obburthan Info <info.obbutha@gmail.com>'
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+
+ANYMAIL = {
+    "RESEND_API_KEY": os.environ.get('RESEND_API_KEY',''),
+}
+DEFAULT_FROM_EMAIL = "Obbuthan Management <management@daily-obburthan.nav.bd>"
+SERVER_EMAIL = "server@daily-obburthan.nav.bd"
+ADMIN_NAME = os.environ.get('ADMIN_NAME')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+ADMINS = [
+    (ADMIN_NAME, ADMIN_EMAIL),
+]
+
+
 
 
 LOGIN_URL          = '/accounts/login/'

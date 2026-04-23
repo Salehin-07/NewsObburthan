@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+handler400 = 'core.views.bad_request'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls', namespace='core')),

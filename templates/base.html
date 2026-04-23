@@ -1,30 +1,101 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="bn" dir="ltr">
+<html lang="bn" dir="ltr" prefix="og: https://ogp.me/ns#">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="{% block meta_description %}ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর{% endblock %}" />
-  <title>{% block title %}ছাত্রকন্ঠ{% endblock %} | ছাত্রকন্ঠ</title>
 
-  <!-- Preconnect -->
+  <!-- ═══════════════════════════════════════════════
+       PRIMARY META
+  ═══════════════════════════════════════════════ -->
+  <title>{% block title %}ছাত্রকন্ঠ{% endblock %} | ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর</title>
+  <meta name="description"        content="{% block meta_description %}ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর। শিক্ষা, রাজনীতি, সংস্কৃতি ও অধিকার নিয়ে নিরপেক্ষ সংবাদ ও বিশ্লেষণ।{% endblock %}" />
+  <meta name="keywords"           content="{% block meta_keywords %}ছাত্রকন্ঠ, বাংলাদেশ ছাত্র সংবাদ, শিক্ষা সংবাদ, ছাত্র অধিকার, বাংলা পত্রিকা{% endblock %}" />
+  <meta name="author"             content="{% block meta_author %}ছাত্রকন্ঠ সম্পাদনা পর্ষদ{% endblock %}" />
+  <meta name="robots"             content="{% block meta_robots %}index, follow{% endblock %}" />
+  <meta name="theme-color"        content="#1a1a2e" />
+  <meta name="color-scheme"       content="light dark" />
+  <link rel="canonical"           href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}" />
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH
+  ═══════════════════════════════════════════════ -->
+  <meta property="og:site_name"   content="ছাত্রকন্ঠ" />
+  <meta property="og:type"        content="{% block og_type %}website{% endblock %}" />
+  <meta property="og:locale"      content="bn_BD" />
+  <meta property="og:url"         content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}" />
+  <meta property="og:title"       content="{% block og_title %}ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}ছাত্রকন্ঠ — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর। শিক্ষা, রাজনীতি ও অধিকার নিয়ে নিরপেক্ষ সংবাদ।{% endblock %}" />
+  <meta property="og:image"       content="{% block og_image %}{% static 'img/og-default.png' %}{% endblock %}" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"   content="{% block og_image_alt %}দৈনিক অভ্যুত্থান{% endblock %}" />
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER / X CARD
+  ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="{% block twitter_site %}@obbuthan{% endblock %}" />
+  <meta name="twitter:title"       content="{% block twitter_title %}দৈনিক অভ্যুত্থান — বাংলাদেশের সমাজের কণ্ঠস্বর{% endblock %}" />
+  <meta name="twitter:description" content="{% block twitter_description %}শিক্ষা, রাজনীতি ও অধিকার নিয়ে নিরপেক্ষ সংবাদ ও বিশ্লেষণ।{% endblock %}" />
+  <meta name="twitter:image"       content="{% block twitter_image %}{% static 'img/logo.png' %}{% endblock %}" />
+
+  <!-- ═══════════════════════════════════════════════
+       STRUCTURED DATA (JSON-LD) — override per page
+  ═══════════════════════════════════════════════ -->
+  {% block structured_data %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "দৈনিক অভ্যুত্থান",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}"
+    },
+    "sameAs": [],
+    "description": "বাংলাদেশের সমাজের কণ্ঠস্বর — শিক্ষা, রাজনীতি ও অধিকার নিয়ে নিরপেক্ষ সংবাদ।",
+    "inLanguage": "bn"
+  }
+  </script>
+  {% endblock %}
+
+  <!-- ═══════════════════════════════════════════════
+       PRECONNECT
+  ═══════════════════════════════════════════════ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 
-  <!-- Google Fonts -->
+  <!-- ═══════════════════════════════════════════════
+       GOOGLE FONTS
+  ═══════════════════════════════════════════════ -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Hind+Siliguri:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
 
-  <!-- Global design system -->
+  <!-- ═══════════════════════════════════════════════
+       FAVICON / APP ICONS
+  ═══════════════════════════════════════════════ -->
+  <link rel="icon"             type="image/png" sizes="32x32" href="{% static 'img/logo.png' %}" />
+  <link rel="icon"             type="image/png" sizes="16x16" href="{% static 'img/loho.png' %}" />
+  <link rel="apple-touch-icon" sizes="180x180"                href="{% static 'img/logo.png' %}" />
+  <link rel="shortcut icon"    type="image/x-icon"            href="{% static 'img/logo.ico' %}" />
+
+  <!-- ═══════════════════════════════════════════════
+       PWA
+  ═══════════════════════════════════════════════ -->
+  {% load pwa %}
+  {% progressive_web_app_meta %}
+
+  <!-- ═══════════════════════════════════════════════
+       STYLESHEETS
+  ═══════════════════════════════════════════════ -->
   <link rel="stylesheet" href="{% static 'css/base.css' %}" />
   <link rel="stylesheet" href="{% static 'css/search.css' %}" />
   <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
   <link rel="stylesheet" href="{% static 'css/footer.css' %}" />
 
-  <!-- Page-level styles -->
   {% block extra_css %}{% endblock %}
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}" />
 </head>
 <body>
 
@@ -33,9 +104,10 @@
 
   <!-- Navigation -->
   {% include 'partials/nav.html' %}
+  {% include 'partials/messages.html' %}
 
   <!-- Main Content -->
-  <main class="ck-main">
+  <main class="ck-main" id="main-content" role="main" tabindex="-1">
     {% block content %}{% endblock %}
   </main>
 
@@ -43,10 +115,9 @@
   {% include 'partials/footer.html' %}
 
   <!-- Global JS -->
-  <script src="{% static 'js/search.js' %}"></script>
-  <script src="{% static 'js/nav.js' %}"></script>
+  <script src="{% static 'js/search.js' %}" defer></script>
+  <script src="{% static 'js/nav.js' %}" defer></script>
 
-  <!-- Page-level scripts -->
   {% block extra_js %}{% endblock %}
 
 </body>

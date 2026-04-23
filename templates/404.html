@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}পৃষ্ঠা পাওয়া যায়নি (৪০৪){% endblock %}
+{% block meta_description %}আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি পাওয়া যায়নি। দৈনিক অভ্যুত্থানের হোমপেজে ফিরে যান।{% endblock %}
+{% block meta_robots %}noindex, follow{% endblock %}
+{% block og_title %}পৃষ্ঠা পাওয়া যায়নি — দৈনিক অভ্যুত্থান{% endblock %}
+{% block og_description %}আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি সরানো হয়েছে বা কখনো ছিল না।{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ck-error-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+    text-align: center;
+  }
+
+  .ck-error-inner {
+    max-width: 560px;
+  }
+
+  .ck-error-code {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(6rem, 20vw, 10rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ck-accent, #c0392b);
+    opacity: 0.15;
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin-bottom: -1.5rem;
+  }
+
+  .ck-error-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    color: var(--ck-text-primary, #1a1a2e);
+    margin-bottom: 1rem;
+  }
+
+  .ck-error-body {
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 1.05rem;
+    color: var(--ck-text-muted, #555);
+    line-height: 1.75;
+    margin-bottom: 2rem;
+  }
+
+  .ck-error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .ck-btn {
+    display: inline-block;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.7rem 1.6rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .ck-btn:hover { opacity: 0.82; }
+
+  .ck-btn--primary {
+    background: var(--ck-accent, #c0392b);
+    color: #fff;
+  }
+
+  .ck-btn--outline {
+    border: 2px solid var(--ck-accent, #c0392b);
+    color: var(--ck-accent, #c0392b);
+    background: transparent;
+  }
+
+  .ck-error-divider {
+    width: 48px;
+    height: 3px;
+    background: var(--ck-accent, #c0392b);
+    margin: 1.5rem auto;
+    border-radius: 2px;
+  }
+</style>
+{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "পৃষ্ঠা পাওয়া যায়নি — দৈনিক অভ্যুত্থান",
+  "description": "অনুরোধকৃত পৃষ্ঠাটি পাওয়া যায়নি।",
+  "url": "{{ request.build_absolute_uri }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="ck-error-page" aria-labelledby="error-heading">
+  <div class="ck-error-inner">
+    <p class="ck-error-code" aria-hidden="true">৪০৪</p>
+    <h1 class="ck-error-title" id="error-heading">পৃষ্ঠাটি পাওয়া যায়নি</h1>
+    <div class="ck-error-divider" role="presentation"></div>
+    <p class="ck-error-body">
+      আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি সরানো হয়েছে, নামকরণ করা হয়েছে,
+      অথবা এটি কখনো বিদ্যমান ছিল না। URL-টি পুনরায় পরীক্ষা করুন।
+    </p>
+    <nav class="ck-error-actions" aria-label="ত্রুটি পৃষ্ঠা নেভিগেশন">
+      <a href="{% url 'core:home' %}" class="ck-btn ck-btn--primary">← হোমপেজে যান</a>
+      <a href="javascript:history.back()" class="ck-btn ck-btn--outline">আগের পৃষ্ঠায় ফিরুন</a>
+    </nav>
+  </div>
+</section>
+{% endblock %}
