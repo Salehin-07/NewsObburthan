@@ -274,3 +274,16 @@ MESSAGE_TAGS = {
     message_constants.WARNING: 'warning',
     message_constants.ERROR:   'error',
 }
+
+
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "TIMEOUT": 300,  # default 5 min fallback
+    }
+}

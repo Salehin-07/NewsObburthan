@@ -1,13 +1,25 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.cache import cache
+from django.db.models import Prefetch
 from django.contrib import messages
 from django.views import View
+from django.db import transaction
 from .models import CorePost, CoreTag
 from .forms import ContactForm, AdRequestForm, RepresentativeApplicationForm
 
 
 POSTS_PER_PAGE = 20
 
+# Cache timeouts (seconds)
+POPULAR_TAGS_CACHE_TTL = 60 * 10      # 10 minutes
+POST_DETAIL_CACHE_TTL  = 60 * 5       # 5 minutes
+RELATED_POSTS_CACHE_TTL = 60 * 10     # 10 minutes
+
+
+# ─────────────────────────────────────────────
+# Shared helpers
+# ─────────────────────────────────────────────
 
 def _paginate(request, queryset, per_page=POSTS_PER_PAGE):
     """Shared pagination helper — returns a Page object."""
@@ -21,25 +33,73 @@ def _paginate(request, queryset, per_page=POSTS_PER_PAGE):
 
 
 def _popular_tags():
-    """Tags that have at least one published post, used everywhere."""
-    return CoreTag.objects.filter(
-        posts__status=CorePost.STATUS_PUBLISHED
-    ).distinct()
+    """
+    Tags with at least one published post.
+    Cached for 10 minutes — tags change rarely.
+    """
+    cached = cache.get('popular_tags')
+    if cached is None:
+        cached = list(
+            CoreTag.objects
+            .filter(posts__status=CorePost.STATUS_PUBLISHED)
+            .distinct()
+        )
+        cache.set('popular_tags', cached, POPULAR_TAGS_CACHE_TTL)
+    return cached
 
+
+def _published_posts_qs():
+    """
+    Base queryset used by home + tag_feed.
+    select_related + prefetch_related so the template
+    never triggers extra per-row queries.
+    """
+    return (
+        CorePost.objects
+        .filter(status=CorePost.STATUS_PUBLISHED)
+        .only(                          # skip heavy fields (body, etc.)
+            'id', 'title', 'slug', 'excerpt',
+            'thumbnail', 'published_at', 'view_count',
+            'author_id',
+        )
+        .select_related('author', 'author__reporter_profile')
+        .prefetch_related(
+            Prefetch(
+                'tags',
+                queryset=CoreTag.objects.only('id', 'name', 'slug'),
+            )
+        )
+        .order_by('-published_at')
+    )
+
+
+# ─────────────────────────────────────────────
+# Error handlers
+# ─────────────────────────────────────────────
 
 def bad_request(request, exception):
     return render(request, '400.html', status=400)
 
+
+# ─────────────────────────────────────────────
+# Public views
+# ─────────────────────────────────────────────
+
 def home(request):
-    """Home page — all published posts, newest first, paginated."""
-    posts_qs = (
-        CorePost.objects
-        .filter(status=CorePost.STATUS_PUBLISHED)
-        .select_related('author', 'author__reporter_profile')
-        .prefetch_related('tags')
-    )
+    """
+    Home page — all published posts, newest first, paginated.
+    Each page result is individually cached so page 1 stays blazing fast.
+    """
+    page_number = request.GET.get('page', 1)
+    cache_key   = f'home_page_{page_number}'
+    page_obj    = cache.get(cache_key)
+
+    if page_obj is None:
+        page_obj = _paginate(request, _published_posts_qs())
+        cache.set(cache_key, page_obj, POST_DETAIL_CACHE_TTL)
+
     context = {
-        'page_obj':     _paginate(request, posts_qs),
+        'page_obj':     page_obj,
         'popular_tags': _popular_tags(),
         'active_tag':   None,
     }
@@ -47,16 +107,23 @@ def home(request):
 
 
 def tag_feed(request, tag):
-    """Tag-filtered feed — same layout as home but scoped to one tag."""
+    """
+    Tag-filtered feed — same layout as home but scoped to one tag.
+    Cache key includes the tag slug so each tag gets its own cache.
+    """
     tag_obj = get_object_or_404(CoreTag, slug=tag)
-    posts_qs = (
-        CorePost.objects
-        .filter(status=CorePost.STATUS_PUBLISHED, tags=tag_obj)
-        .select_related('author', 'author__reporter_profile')
-        .prefetch_related('tags')
-    )
+
+    page_number = request.GET.get('page', 1)
+    cache_key   = f'tag_{tag}_{page_number}'
+    page_obj    = cache.get(cache_key)
+
+    if page_obj is None:
+        posts_qs = _published_posts_qs().filter(tags=tag_obj)
+        page_obj = _paginate(request, posts_qs)
+        cache.set(cache_key, page_obj, POST_DETAIL_CACHE_TTL)
+
     context = {
-        'page_obj':     _paginate(request, posts_qs),
+        'page_obj':     page_obj,
         'popular_tags': _popular_tags(),
         'active_tag':   tag_obj,
     }
@@ -64,26 +131,56 @@ def tag_feed(request, tag):
 
 
 def post_detail(request, slug):
-    """Full article detail page."""
-    post = get_object_or_404(
-        CorePost.objects
-        .select_related('author', 'author__reporter_profile')
-        .prefetch_related('tags'),
-        slug=slug,
-        status=CorePost.STATUS_PUBLISHED,
+    """
+    Full article detail page.
+
+    Optimisations applied:
+    1. Post itself is cached by slug.
+    2. Related posts are cached separately (keyed on post PK).
+    3. View counter is fire-and-forget via F() expression,
+       done OUTSIDE the cache block so it always fires but
+       never slows the response.
+    """
+    # ── 1. Fetch (or cache) the post ──
+    cache_key = f'post_{slug}'
+    post = cache.get(cache_key)
+
+    if post is None:
+        post = get_object_or_404(
+            CorePost.objects
+            .select_related('author', 'author__reporter_profile')
+            .prefetch_related(
+                Prefetch(
+                    'tags',
+                    queryset=CoreTag.objects.only('id', 'name', 'slug'),
+                )
+            ),
+            slug=slug,
+            status=CorePost.STATUS_PUBLISHED,
+        )
+        cache.set(cache_key, post, POST_DETAIL_CACHE_TTL)
+
+    # ── 2. Increment view count (non-blocking F-expression) ──
+    # Run as a single UPDATE, never read back — no cache busting needed.
+    CorePost.objects.filter(pk=post.pk).update(
+        view_count=__import__('django.db.models', fromlist=['F']).F('view_count') + 1
     )
 
-    # Increment view count (non-blocking F-expression update)
-    post.increment_views()
+    # ── 3. Related posts (cached per post) ──
+    related_cache_key = f'related_{post.pk}'
+    related_posts = cache.get(related_cache_key)
 
-    # Related posts: same tag(s), exclude current, newest 5
-    related_posts = (
-        CorePost.objects
-        .filter(status=CorePost.STATUS_PUBLISHED, tags__in=post.tags.all())
-        .exclude(pk=post.pk)
-        .distinct()
-        .order_by('-published_at')[:5]
-    )
+    if related_posts is None:
+        tag_ids = [t.pk for t in post.tags.all()]   # already prefetched
+        related_posts = list(
+            CorePost.objects
+            .filter(status=CorePost.STATUS_PUBLISHED, tags__in=tag_ids)
+            .exclude(pk=post.pk)
+            .only('id', 'title', 'slug', 'thumbnail', 'published_at')
+            .distinct()
+            .order_by('-published_at')[:5]
+        )
+        cache.set(related_cache_key, related_posts, RELATED_POSTS_CACHE_TTL)
 
     context = {
         'post':          post,
@@ -94,18 +191,15 @@ def post_detail(request, slug):
     return render(request, 'core/post_detail.html', context)
 
 
+# ─────────────────────────────────────────────
+# Form views (no heavy queries — unchanged)
+# ─────────────────────────────────────────────
 
 class ContactView(View):
-    """
-    GET  — যোগাযোগ পাতা দেখান
-    POST — বার্তা সংরক্ষণ করুন
-    """
-
     template_name = 'core/contact.html'
 
     def get(self, request):
-        form = ContactForm()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': ContactForm()})
 
     def post(self, request):
         form = ContactForm(request.POST)
@@ -116,24 +210,18 @@ class ContactView(View):
                 'আপনার বার্তা সফলভাবে পাঠানো হয়েছে। আমরা শীঘ্রই যোগাযোগ করব।'
             )
             return redirect('contact')
-        # Re-render with errors
         return render(request, self.template_name, {'form': form})
 
 
 class PortalView(View):
-    """
-    GET  — পোর্টাল পাতা দেখান (বিজ্ঞাপন + প্রতিনিধি ট্যাব)
-    POST — form_type অনুযায়ী আবেদন সংরক্ষণ করুন
-    """
-
     template_name = 'core/portal.html'
 
     def _get_context(self, ad_form=None, rep_form=None,
                      ad_success=False, rep_success=False):
         return {
-            'ad_form':    ad_form  or AdRequestForm(),
-            'rep_form':   rep_form or RepresentativeApplicationForm(),
-            'ad_success': ad_success,
+            'ad_form':     ad_form  or AdRequestForm(),
+            'rep_form':    rep_form or RepresentativeApplicationForm(),
+            'ad_success':  ad_success,
             'rep_success': rep_success,
         }
 
@@ -143,25 +231,22 @@ class PortalView(View):
     def post(self, request):
         form_type = request.POST.get('form_type')
 
-        # ── বিজ্ঞাপন আবেদন ──
         if form_type == 'ad':
             ad_form = AdRequestForm(request.POST)
             if ad_form.is_valid():
                 ad_form.save()
-                ctx = self._get_context(ad_success=True)
-                return render(request, self.template_name, ctx)
-            ctx = self._get_context(ad_form=ad_form)
-            return render(request, self.template_name, ctx)
+                return render(request, self.template_name,
+                              self._get_context(ad_success=True))
+            return render(request, self.template_name,
+                          self._get_context(ad_form=ad_form))
 
-        # ── প্রতিনিধি আবেদন ──
         elif form_type == 'rep':
             rep_form = RepresentativeApplicationForm(request.POST, request.FILES)
             if rep_form.is_valid():
                 rep_form.save()
-                ctx = self._get_context(rep_success=True)
-                return render(request, self.template_name, ctx)
-            ctx = self._get_context(rep_form=rep_form)
-            return render(request, self.template_name, ctx)
+                return render(request, self.template_name,
+                              self._get_context(rep_success=True))
+            return render(request, self.template_name,
+                          self._get_context(rep_form=rep_form))
 
-        # অজানা form_type
         return render(request, self.template_name, self._get_context())
