@@ -12,3 +12,4 @@ psycopg2
 python-dotenv
 dj_database_url
 django-anymail[resend]
+django-redis
