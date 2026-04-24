@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY','hdjdlpakajsjsfjsjajwuwhh267992knb@@@#####@##usjsjoowi66289oksnsnsbhshsjsjsiwkks')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com','daily-obburthan.nav.bd','www.daily-obburthan.nav.bd']
 

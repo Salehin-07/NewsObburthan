@@ -4,7 +4,6 @@ from django.core.cache import cache
 from django.db.models import Prefetch
 from django.contrib import messages
 from django.views import View
-from django.db import transaction
 from .models import CorePost, CoreTag
 from .forms import ContactForm, AdRequestForm, RepresentativeApplicationForm
 
@@ -12,9 +11,9 @@ from .forms import ContactForm, AdRequestForm, RepresentativeApplicationForm
 POSTS_PER_PAGE = 20
 
 # Cache timeouts (seconds)
-POPULAR_TAGS_CACHE_TTL = 60 * 10      # 10 minutes
-POST_DETAIL_CACHE_TTL  = 60 * 5       # 5 minutes
-RELATED_POSTS_CACHE_TTL = 60 * 10     # 10 minutes
+POPULAR_TAGS_CACHE_TTL  = 60 * 10   # 10 minutes
+PAGE_CACHE_TTL          = 60 * 5    # 5 minutes
+RELATED_POSTS_CACHE_TTL = 60 * 10   # 10 minutes
 
 
 # ─────────────────────────────────────────────
@@ -50,16 +49,15 @@ def _popular_tags():
 
 def _published_posts_qs():
     """
-    Base queryset used by home + tag_feed.
-    select_related + prefetch_related so the template
-    never triggers extra per-row queries.
+    Base queryset for home + tag_feed.
+    .only() skips heavy fields (content) not needed in list views.
     """
     return (
         CorePost.objects
         .filter(status=CorePost.STATUS_PUBLISHED)
-        .only(                          # skip heavy fields (body, etc.)
+        .only(
             'id', 'title', 'slug', 'excerpt',
-            'thumbnail', 'published_at', 'view_count',
+            'cover_image', 'published_at', 'views_count',
             'author_id',
         )
         .select_related('author', 'author__reporter_profile')
@@ -86,17 +84,14 @@ def bad_request(request, exception):
 # ─────────────────────────────────────────────
 
 def home(request):
-    """
-    Home page — all published posts, newest first, paginated.
-    Each page result is individually cached so page 1 stays blazing fast.
-    """
+    """Home page — all published posts, newest first, paginated."""
     page_number = request.GET.get('page', 1)
     cache_key   = f'home_page_{page_number}'
     page_obj    = cache.get(cache_key)
 
     if page_obj is None:
         page_obj = _paginate(request, _published_posts_qs())
-        cache.set(cache_key, page_obj, POST_DETAIL_CACHE_TTL)
+        cache.set(cache_key, page_obj, PAGE_CACHE_TTL)
 
     context = {
         'page_obj':     page_obj,
@@ -107,10 +102,7 @@ def home(request):
 
 
 def tag_feed(request, tag):
-    """
-    Tag-filtered feed — same layout as home but scoped to one tag.
-    Cache key includes the tag slug so each tag gets its own cache.
-    """
+    """Tag-filtered feed — same layout as home but scoped to one tag."""
     tag_obj = get_object_or_404(CoreTag, slug=tag)
 
     page_number = request.GET.get('page', 1)
@@ -120,7 +112,7 @@ def tag_feed(request, tag):
     if page_obj is None:
         posts_qs = _published_posts_qs().filter(tags=tag_obj)
         page_obj = _paginate(request, posts_qs)
-        cache.set(cache_key, page_obj, POST_DETAIL_CACHE_TTL)
+        cache.set(cache_key, page_obj, PAGE_CACHE_TTL)
 
     context = {
         'page_obj':     page_obj,
@@ -131,19 +123,9 @@ def tag_feed(request, tag):
 
 
 def post_detail(request, slug):
-    """
-    Full article detail page.
-
-    Optimisations applied:
-    1. Post itself is cached by slug.
-    2. Related posts are cached separately (keyed on post PK).
-    3. View counter is fire-and-forget via F() expression,
-       done OUTSIDE the cache block so it always fires but
-       never slows the response.
-    """
-    # ── 1. Fetch (or cache) the post ──
+    """Full article detail page."""
     cache_key = f'post_{slug}'
-    post = cache.get(cache_key)
+    post      = cache.get(cache_key)
 
     if post is None:
         post = get_object_or_404(
@@ -158,25 +140,22 @@ def post_detail(request, slug):
             slug=slug,
             status=CorePost.STATUS_PUBLISHED,
         )
-        cache.set(cache_key, post, POST_DETAIL_CACHE_TTL)
+        cache.set(cache_key, post, PAGE_CACHE_TTL)
 
-    # ── 2. Increment view count (non-blocking F-expression) ──
-    # Run as a single UPDATE, never read back — no cache busting needed.
-    CorePost.objects.filter(pk=post.pk).update(
-        view_count=__import__('django.db.models', fromlist=['F']).F('view_count') + 1
-    )
+    # Single atomic UPDATE — no read-back, no race condition
+    post.increment_views()
 
-    # ── 3. Related posts (cached per post) ──
+    # Related posts cached per post PK
     related_cache_key = f'related_{post.pk}'
-    related_posts = cache.get(related_cache_key)
+    related_posts     = cache.get(related_cache_key)
 
     if related_posts is None:
-        tag_ids = [t.pk for t in post.tags.all()]   # already prefetched
+        tag_ids = [t.pk for t in post.tags.all()]  # already prefetched
         related_posts = list(
             CorePost.objects
             .filter(status=CorePost.STATUS_PUBLISHED, tags__in=tag_ids)
             .exclude(pk=post.pk)
-            .only('id', 'title', 'slug', 'thumbnail', 'published_at')
+            .only('id', 'title', 'slug', 'cover_image', 'published_at')
             .distinct()
             .order_by('-published_at')[:5]
         )
@@ -192,7 +171,7 @@ def post_detail(request, slug):
 
 
 # ─────────────────────────────────────────────
-# Form views (no heavy queries — unchanged)
+# Form views
 # ─────────────────────────────────────────────
 
 class ContactView(View):
