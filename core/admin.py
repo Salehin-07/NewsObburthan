@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from django.utils import timezone
 
 from .models import CorePost, CoreTag, CoreReporterProfile, ContactMessage, AdRequest, RepresentativeApplication, Advertisement
@@ -77,11 +77,11 @@ class CorePostAdmin(admin.ModelAdmin):
     @admin.display(description='Status', ordering='status')
     def status_badge(self, obj):
         if obj.status == CorePost.STATUS_PUBLISHED:
-            return format_html(
+            return mark_safe(
                 '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;'
                 'border-radius:99px;font-size:11px;font-weight:700;">প্রকাশিত</span>'
             )
-        return format_html(
+        return mark_safe(
             '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;'
             'border-radius:99px;font-size:11px;font-weight:700;">খসড়া</span>'
         )
