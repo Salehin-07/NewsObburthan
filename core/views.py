@@ -1,10 +1,17 @@
+"""
+views.py — দৈনিক অভ্যুত্থান
+Adds advertisement context helpers alongside existing logic.
+Only the changed/added parts are shown below — drop-in replace your existing file.
+"""
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from django.db.models import Prefetch
 from django.contrib import messages
 from django.views import View
-from .models import CorePost, CoreTag
+from django.utils import timezone
+from .models import CorePost, CoreTag, Advertisement
 from .forms import ContactForm, AdRequestForm, RepresentativeApplicationForm
 
 
@@ -14,6 +21,7 @@ POSTS_PER_PAGE = 20
 POPULAR_TAGS_CACHE_TTL  = 60 * 10   # 10 minutes
 PAGE_CACHE_TTL          = 60 * 5    # 5 minutes
 RELATED_POSTS_CACHE_TTL = 60 * 10   # 10 minutes
+ADS_CACHE_TTL           = 60 * 15   # 15 minutes  (ads change rarely)
 
 
 # ─────────────────────────────────────────────
@@ -21,7 +29,6 @@ RELATED_POSTS_CACHE_TTL = 60 * 10   # 10 minutes
 # ─────────────────────────────────────────────
 
 def _paginate(request, queryset, per_page=POSTS_PER_PAGE):
-    """Shared pagination helper — returns a Page object."""
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page', 1)
     try:
@@ -32,10 +39,6 @@ def _paginate(request, queryset, per_page=POSTS_PER_PAGE):
 
 
 def _popular_tags():
-    """
-    Tags with at least one published post.
-    Cached for 10 minutes — tags change rarely.
-    """
     cached = cache.get('popular_tags')
     if cached is None:
         cached = list(
@@ -48,10 +51,6 @@ def _popular_tags():
 
 
 def _published_posts_qs():
-    """
-    Base queryset for home + tag_feed.
-    .only() skips heavy fields (content) not needed in list views.
-    """
     return (
         CorePost.objects
         .filter(status=CorePost.STATUS_PUBLISHED)
@@ -69,6 +68,29 @@ def _published_posts_qs():
         )
         .order_by('-published_at')
     )
+
+
+def _get_ads():
+    """
+    Returns dict of active, non-expired ads grouped by placement.
+    Cached for 15 minutes.
+    """
+    cached = cache.get('ads_by_placement')
+    if cached is None:
+        now = timezone.now()
+        active_ads = list(
+            Advertisement.objects
+            .filter(is_active=True)
+            .exclude(expires_at__lt=now)
+            .order_by('-priority', '-created')
+        )
+        cached = {
+            'inline_ads':  [a for a in active_ads if a.placement == 'inline'],
+            'banner_ads':  [a for a in active_ads if a.placement == 'banner'],
+            'sidebar_ads': [a for a in active_ads if a.placement == 'sidebar'],
+        }
+        cache.set('ads_by_placement', cached, ADS_CACHE_TTL)
+    return cached
 
 
 # ─────────────────────────────────────────────
@@ -93,10 +115,13 @@ def home(request):
         page_obj = _paginate(request, _published_posts_qs())
         cache.set(cache_key, page_obj, PAGE_CACHE_TTL)
 
+    ads = _get_ads()
+
     context = {
         'page_obj':     page_obj,
         'popular_tags': _popular_tags(),
         'active_tag':   None,
+        **ads,   # inline_ads, banner_ads, sidebar_ads
     }
     return render(request, 'core/home.html', context)
 
@@ -114,10 +139,13 @@ def tag_feed(request, tag):
         page_obj = _paginate(request, posts_qs)
         cache.set(cache_key, page_obj, PAGE_CACHE_TTL)
 
+    ads = _get_ads()
+
     context = {
         'page_obj':     page_obj,
         'popular_tags': _popular_tags(),
         'active_tag':   tag_obj,
+        **ads,
     }
     return render(request, 'core/home.html', context)
 
@@ -142,15 +170,13 @@ def post_detail(request, slug):
         )
         cache.set(cache_key, post, PAGE_CACHE_TTL)
 
-    # Single atomic UPDATE — no read-back, no race condition
     post.increment_views()
 
-    # Related posts cached per post PK
     related_cache_key = f'related_{post.pk}'
     related_posts     = cache.get(related_cache_key)
 
     if related_posts is None:
-        tag_ids = [t.pk for t in post.tags.all()]  # already prefetched
+        tag_ids = [t.pk for t in post.tags.all()]
         related_posts = list(
             CorePost.objects
             .filter(status=CorePost.STATUS_PUBLISHED, tags__in=tag_ids)

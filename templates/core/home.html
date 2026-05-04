@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block meta_description %}
-  {% if active_tag %}{{ active_tag.name }} বিভাগের সর্বশেষ সংবাদ — ছাত্রকন্ঠ{% else %}দৈনিক অভ্যুত্থান — বাংলাদেশের ছাত্র সমাজের কণ্ঠস্বর। সর্বশেষ সংবাদ, বিশ্লেষণ ও মতামত।{% endif %}
+  {% if active_tag %}{{ active_tag.name }} বিভাগের সর্বশেষ সংবাদ — দৈনিক অভ্যুত্থান{% else %}দৈনিক অভ্যুত্থান — বাংলাদেশের সমাজের কণ্ঠস্বর। সর্বশেষ সংবাদ, বিশ্লেষণ ও মতামত।{% endif %}
 {% endblock %}
 
 {% block extra_css %}
@@ -14,204 +14,438 @@
 {% endblock %}
 
 {% block content %}
-<div class="ck-container">
+<div class="dao-page">
 
-  {% if active_tag %}
-  <div class="ck-feed-header">
-    <div class="ck-feed-header__eyebrow">বিভাগ অনুযায়ী ফিল্টার</div>
-    <h1 class="ck-feed-header__title">{{ active_tag.name }}</h1>
-    <p class="ck-feed-header__count">{{ page_obj.paginator.count }} টি সংবাদ পাওয়া গেছে</p>
+
+  {% if page_obj.object_list %}
+  <div class="dao-ticker" role="marquee" aria-label="সর্বশেষ সংবাদ">
+    <div class="dao-ticker__label" aria-hidden="true">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style="margin-right:.4rem;flex-shrink:0"><circle cx="5" cy="5" r="5" opacity=".8"/></svg>
+      সর্বশেষ
+    </div>
+    <div class="dao-ticker__track" aria-hidden="true">
+      {% for post in page_obj.object_list|slice:":8" %}
+        <span>
+          <a href="{% url 'core:post_detail' slug=post.slug %}" style="color:inherit;">{{ post.title }}</a>
+        </span>
+        <span class="dao-ticker__sep">◆</span>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 
-  <div class="ck-home-layout">
-
-    <div class="ck-home-content">
-
-      {% if page_obj.object_list %}
-
-        {% if not active_tag and page_obj.number == 1 %}
-
-          {% with hero=page_obj.object_list.0 %}
-          <article class="ck-hero"
-                   id="post-{{ hero.slug }}"
-                   data-ck-post-title="{{ hero.title }}"
-                   data-ck-post-url="{% url 'core:post_detail' slug=hero.slug %}"
-                   data-ck-post-tags="{% for t in hero.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
-
-            <a href="{% url 'core:post_detail' slug=hero.slug %}" class="ck-hero__img-wrap" tabindex="-1" aria-hidden="true">
-              {% if hero.cover_image %}
-                <img src="{{ hero.cover_image.url }}" alt="{{ hero.title }}" loading="eager" width="800" height="533" />
-              {% else %}
-                <img src="https://picsum.photos/seed/{{ hero.slug }}/800/533" alt="{{ hero.title }}" loading="eager" width="800" height="533" />
-              {% endif %}
-            </a>
-
-            <div class="ck-hero__body">
-              {% if hero.tags.all %}
-              <div class="ck-hero__tags">
-                {% for tag in hero.tags.all %}
-                  <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="ck-tag">{{ tag.name }}</a>
-                {% endfor %}
-              </div>
-              {% endif %}
-
-              <h2 class="ck-hero__title">
-                <a href="{% url 'core:post_detail' slug=hero.slug %}">{{ hero.title }}</a>
-              </h2>
-
-              <p class="ck-hero__excerpt">{{ hero.display_excerpt }}</p>
-
-              <div class="ck-meta">
-                <span class="ck-meta-author">
-                  {% if hero.author.reporter_profile.photo %}
-                    <img class="ck-meta-avatar" src="{{ hero.author.reporter_profile.photo.url }}" alt="{{ hero.author.get_full_name }}" />
-                  {% else %}
-                    <span class="ck-meta-avatar-placeholder">{{ hero.author.get_full_name|default:hero.author.username|slice:":1"|upper }}</span>
-                  {% endif %}
-                  {{ hero.author.get_full_name|default:hero.author.username }}
-                </span>
-                <span class="ck-meta-dot"></span>
-                <span class="ck-meta-date">{{ hero.published_at|date:"d M Y" }}</span>
-                <span class="ck-meta-dot"></span>
-                <span class="ck-meta-read">{{ hero.reading_time }} মিনিট পড়া</span>
-                <span class="ck-meta-dot"></span>
-                <span class="ck-meta-views">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  {{ hero.views_count }}
-                </span>
-              </div>
-
-              <a href="{% url 'core:post_detail' slug=hero.slug %}" class="ck-hero__read-more">
-                পুরো সংবাদ পড়ুন
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M3 8h10M9 4l4 4-4 4"/>
-                </svg>
-              </a>
-            </div>
-          </article>
-          {% endwith %}
+  <div class="ck-container">
 
 
-          {% if page_obj.object_list|length > 1 %}
-          <div class="ck-section-rule">
-            <div class="ck-section-rule__accent-bar"></div>
-            <span class="ck-section-rule__label">সর্বশেষ সংবাদ</span>
-            <div class="ck-section-rule__line"></div>
+    <div class="dao-dateline">
+      <div class="dao-dateline__date">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span id="dao-today-date">লোড হচ্ছে…</span>
+        <script>
+          (function(){
+            var d = new Date();
+            var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+            document.getElementById('dao-today-date').textContent =
+              d.toLocaleDateString('bn-BD', opts);
+          })();
+        </script>
+      </div>
+      <div class="dao-dateline__social">
+        <a href="#" aria-label="ফেসবুক" rel="noopener noreferrer" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="#" aria-label="ইউটিউব" rel="noopener noreferrer" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>
+        </a>
+        <a href="#" aria-label="টেলিগ্রাম" rel="noopener noreferrer" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        </a>
+      </div>
+    </div>
+
+
+    {% if active_tag %}
+    <div class="dao-feed-header">
+      <div class="dao-feed-header__eyebrow">বিভাগ অনুযায়ী ফিল্টার</div>
+      <h1 class="dao-feed-header__title">{{ active_tag.name }}</h1>
+      <p class="dao-feed-header__count">{{ page_obj.paginator.count }} টি সংবাদ পাওয়া গেছে</p>
+    </div>
+    {% endif %}
+
+
+    {% if banner_ads %}
+    {% with ad=banner_ads.0 %}
+    <div class="dao-ad-banner-wrap" style="padding-top:.75rem;padding-bottom:.25rem;border-top:none;">
+      <div class="dao-ad-banner">
+        <span class="dao-ad-banner__label">বিজ্ঞাপন</span>
+        {% if ad.ad_redirect_url %}
+        <a href="{{ ad.ad_redirect_url }}" target="_blank" rel="noopener sponsored">
+        {% endif %}
+          <div class="dao-ad-banner__inner">
+            {% if ad.image %}
+              <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+            {% else %}
+              <div class="dao-ad-banner__title">{{ ad.title }}</div>
+              {% if ad.description %}<div class="dao-ad-banner__desc">{{ ad.description }}</div>{% endif %}
+              {% if ad.ad_redirect_url %}<span class="dao-ad-banner__cta">বিস্তারিত দেখুন</span>{% endif %}
+            {% endif %}
           </div>
-          <div class="ck-posts-grid">
-            {% for post in page_obj.object_list %}{% if not forloop.first %}{% include 'partials/post_card.html' %}{% endif %}{% endfor %}
+        {% if ad.ad_redirect_url %}</a>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+
+    <div class="dao-layout">
+
+      {# ── LEFT: CONTENT COLUMN ─────────────────────────── #}
+      <div class="dao-content">
+
+        {% if page_obj.object_list %}
+
+          {# ── HERO (first post, page 1, no tag filter) ──── #}
+          {% if not active_tag and page_obj.number == 1 %}
+
+            {% with hero=page_obj.object_list.0 %}
+            <article class="dao-hero">
+              <a href="{% url 'core:post_detail' slug=hero.slug %}" class="dao-hero__img-link" tabindex="-1" aria-hidden="true">
+                {% if hero.tags.all %}
+                <span class="dao-hero__category-badge">{{ hero.tags.all.0.name }}</span>
+                {% endif %}
+                {% if hero.cover_image %}
+                  <img src="{{ hero.cover_image.url }}"
+                       alt="{{ hero.title }}"
+                       loading="eager"
+                       fetchpriority="high"
+                       width="800" height="533" />
+                {% else %}
+                  <img src="https://picsum.photos/seed/{{ hero.slug }}/800/533"
+                       alt="{{ hero.title }}"
+                       loading="eager"
+                       fetchpriority="high"
+                       width="800" height="533" />
+                {% endif %}
+              </a>
+
+              <div class="dao-hero__body">
+                {% if hero.tags.all %}
+                <div class="dao-hero__tags">
+                  {% for tag in hero.tags.all %}
+                    <a href="{% url 'core:tag_feed' tag=tag.slug %}" class="dao-tag">{{ tag.name }}</a>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="dao-hero__eyebrow">প্রধান সংবাদ</div>
+
+                <h2 class="dao-hero__title">
+                  <a href="{% url 'core:post_detail' slug=hero.slug %}">{{ hero.title }}</a>
+                </h2>
+
+                <p class="dao-hero__excerpt">{{ hero.display_excerpt }}</p>
+
+                <div class="dao-hero__footer">
+                  <div class="dao-meta">
+                    <span class="dao-meta-author">
+                      {% if hero.author.reporter_profile.photo %}
+                        <img class="dao-meta-avatar"
+                             src="{{ hero.author.reporter_profile.photo.url }}"
+                             alt="{{ hero.author.get_full_name }}"
+                             loading="lazy" />
+                      {% else %}
+                        <span class="dao-meta-avatar-ph">{{ hero.author.get_full_name|default:hero.author.username|slice:":1"|upper }}</span>
+                      {% endif %}
+                      {{ hero.author.get_full_name|default:hero.author.username }}
+                    </span>
+                    <span class="dao-meta-dot" aria-hidden="true"></span>
+                    <span class="dao-meta-date">{{ hero.published_at|date:"d M Y" }}</span>
+                    <span class="dao-meta-dot" aria-hidden="true"></span>
+                    <span class="dao-meta-read">{{ hero.reading_time }} মিনিট</span>
+                    <span class="dao-meta-dot" aria-hidden="true"></span>
+                    <span class="dao-meta-views" aria-label="{{ hero.views_count }} বার পড়া হয়েছে">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      {{ hero.views_count }}
+                    </span>
+                  </div>
+                  <a href="{% url 'core:post_detail' slug=hero.slug %}" class="dao-hero__read-more">
+                    পুরো পড়ুন
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 8h10M9 4l4 4-4 4"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+            {% endwith %}
+
+            {# ── Grid: post 2 onward ── #}
+            {% if page_obj.object_list|length > 1 %}
+            <div class="dao-rule">
+              <div class="dao-rule__bar" aria-hidden="true"></div>
+              <span class="dao-rule__label">সর্বশেষ সংবাদ</span>
+              <div class="dao-rule__line" aria-hidden="true"></div>
+            </div>
+
+            <div class="dao-grid">
+              {% for post in page_obj.object_list %}{% if not forloop.first %}
+
+                {# ── Inject inline ad after every N posts ── #}
+                {% if inline_ads %}
+                  {% with ad_mod=forloop.counter0 %}
+                  {% for ad in inline_ads %}
+                    {% if ad_mod == ad.show_every|add:"0" %}
+                    <div class="dao-ad-inline">
+                      <span class="dao-ad-inline__label">বিজ্ঞাপন</span>
+                      {% if ad.ad_redirect_url %}
+                      <a href="{{ ad.ad_redirect_url }}" target="_blank" rel="noopener sponsored" style="width:100%;text-align:center;">
+                      {% endif %}
+                        {% if ad.image %}
+                          <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+                        {% else %}
+                          <div>
+                            <div class="dao-ad-inline__title">{{ ad.title }}</div>
+                            {% if ad.description %}<div class="dao-ad-inline__desc">{{ ad.description }}</div>{% endif %}
+                            {% if ad.ad_redirect_url %}<span class="dao-ad-inline__cta">বিস্তারিত দেখুন</span>{% endif %}
+                          </div>
+                        {% endif %}
+                      {% if ad.ad_redirect_url %}</a>{% endif %}
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                  {% endwith %}
+                {% endif %}
+
+                {% include 'partials/post_card.html' %}
+
+              {% endif %}{% endfor %}
+            </div>
+            {% endif %}
+
+          {% else %}
+          {# ── Tag feed / page 2+ — no hero ── #}
+          <div class="dao-rule">
+            <div class="dao-rule__bar" aria-hidden="true"></div>
+            <span class="dao-rule__label">
+              {% if active_tag %}{{ active_tag.name }}{% else %}সর্বশেষ সংবাদ{% endif %}
+            </span>
+            <div class="dao-rule__line" aria-hidden="true"></div>
+          </div>
+          <div class="dao-grid">
+            {% for post in page_obj.object_list %}
+
+              {# ── Inject inline ad after every N posts ── #}
+              {% if inline_ads and forloop.counter0 > 0 %}
+                {% with ad_mod=forloop.counter0 %}
+                {% for ad in inline_ads %}
+                  {% if ad_mod == ad.show_every|add:"0" %}
+                  <div class="dao-ad-inline">
+                    <span class="dao-ad-inline__label">বিজ্ঞাপন</span>
+                    {% if ad.ad_redirect_url %}
+                    <a href="{{ ad.ad_redirect_url }}" target="_blank" rel="noopener sponsored" style="width:100%;text-align:center;">
+                    {% endif %}
+                      {% if ad.image %}
+                        <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+                      {% else %}
+                        <div>
+                          <div class="dao-ad-inline__title">{{ ad.title }}</div>
+                          {% if ad.description %}<div class="dao-ad-inline__desc">{{ ad.description }}</div>{% endif %}
+                          {% if ad.ad_redirect_url %}<span class="dao-ad-inline__cta">বিস্তারিত দেখুন</span>{% endif %}
+                        </div>
+                      {% endif %}
+                    {% if ad.ad_redirect_url %}</a>{% endif %}
+                  </div>
+                  {% endif %}
+                {% endfor %}
+                {% endwith %}
+              {% endif %}
+
+              {% include 'partials/post_card.html' %}
+            {% endfor %}
           </div>
           {% endif %}
 
         {% else %}
- 
-        <div class="ck-section-rule">
-          <div class="ck-section-rule__accent-bar"></div>
-          <span class="ck-section-rule__label">
-            {% if active_tag %}{{ active_tag.name }} সংবাদ{% else %}সর্বশেষ সংবাদ{% endif %}
-          </span>
-          <div class="ck-section-rule__line"></div>
-        </div>
-        <div class="ck-posts-grid">
-          {% for post in page_obj.object_list %}{% include 'partials/post_card.html' %}{% endfor %}
-        </div>
-        {% endif %}
-
-      {% else %}
-      <div class="ck-empty">
-        <div class="ck-empty__icon">📰</div>
-        <h2 class="ck-empty__title">
-          {% if active_tag %}এই বিভাগে কোনো সংবাদ নেই{% else %}এখনো কোনো সংবাদ প্রকাশিত হয়নি{% endif %}
-        </h2>
-        <p class="ck-empty__sub">
-          {% if active_tag %}<a href="{% url 'core:home' %}" style="color:var(--ck-accent)">প্রচ্ছদে ফিরুন</a>{% else %}শীঘ্রই সংবাদ প্রকাশিত হবে।{% endif %}
-        </p>
-      </div>
-      {% endif %}
-
-      {% if page_obj.paginator.num_pages > 1 %}
-      <nav class="ck-pagination" aria-label="পৃষ্ঠা নেভিগেশন">
-
-        {% if page_obj.has_previous %}
-          <a class="ck-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="আগের পৃষ্ঠা">‹</a>
-        {% else %}
-          <span class="ck-page-btn is-disabled" aria-hidden="true">‹</span>
-        {% endif %}
-
-        {% with num=page_obj.paginator.num_pages cur=page_obj.number %}
-          {% for i in page_obj.paginator.page_range %}
-            {% if i == 1 or i == num or i >= cur|add:"-2" and i <= cur|add:"2" %}
-              {% if i == cur %}
-                <span class="ck-page-btn is-active" aria-current="page">{{ i }}</span>
-              {% else %}
-                <a class="ck-page-btn" href="?page={{ i }}">{{ i }}</a>
-              {% endif %}
-            {% elif i == cur|add:"-3" or i == cur|add:"3" %}
-              <span class="ck-page-ellipsis" aria-hidden="true">…</span>
+        {# ── Empty state ── #}
+        <div class="dao-empty">
+          <div class="dao-empty__icon" aria-hidden="true">📰</div>
+          <h2 class="dao-empty__title">
+            {% if active_tag %}এই বিভাগে কোনো সংবাদ নেই{% else %}এখনো কোনো সংবাদ প্রকাশিত হয়নি{% endif %}
+          </h2>
+          <p class="dao-empty__sub">
+            {% if active_tag %}
+              <a href="{% url 'core:home' %}" style="color:var(--dao-accent)">প্রচ্ছদে ফিরুন</a>
+            {% else %}
+              শীঘ্রই সংবাদ প্রকাশিত হবে।
             {% endif %}
-          {% endfor %}
-        {% endwith %}
-
-        {% if page_obj.has_next %}
-          <a class="ck-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="পরের পৃষ্ঠা">›</a>
-        {% else %}
-          <span class="ck-page-btn is-disabled" aria-hidden="true">›</span>
+          </p>
+        </div>
         {% endif %}
 
-        <p class="ck-pagination__info">
-          পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-          &nbsp;·&nbsp; মোট {{ page_obj.paginator.count }} টি সংবাদ
-        </p>
-      </nav>
-      {% endif %}
 
-    </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="dao-pagination" aria-label="পৃষ্ঠা নেভিগেশন">
 
-    <aside class="ck-home-sidebar" aria-label="সাইডবার">
-
-      <div class="ck-sidebar-block">
-        <div class="ck-sidebar-title">সর্বাধিক পঠিত</div>
-        <div class="ck-sidebar-list">
-          {% for post in page_obj.object_list|slice:":5" %}
-          <div class="ck-sidebar-item">
-            <span class="ck-sidebar-item__num">{{ forloop.counter }}</span>
-            <div class="ck-sidebar-item__body">
-              <a href="{% url 'core:post_detail' slug=post.slug %}"
-                 class="ck-sidebar-item__title"
-                 data-ck-post-title="{{ post.title }}"
-                 data-ck-post-url="{% url 'core:post_detail' slug=post.slug %}">
-                {{ post.title }}
-              </a>
-              <div class="ck-sidebar-item__date">{{ post.published_at|date:"d M Y" }}</div>
-            </div>
-          </div>
-          {% empty %}
-          <p style="font-size:.8rem;color:var(--ck-ink-faint);padding:.5rem 0;">কোনো সংবাদ নেই।</p>
-          {% endfor %}
-        </div>
-      </div>
-
-      {% if popular_tags %}
-      <div class="ck-sidebar-block">
-        <div class="ck-sidebar-title">বিষয় অনুযায়ী</div>
-        <div class="ck-tag-cloud">
-          {% for tag in popular_tags %}
-            <a href="{% url 'core:tag_feed' tag=tag.slug %}"
-               class="ck-tag-chip {% if active_tag and active_tag.slug == tag.slug %}is-active{% endif %}">
-              {{ tag.name }}
+          {% if page_obj.has_previous %}
+            <a class="dao-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="আগের পৃষ্ঠা">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4l-4 4 4 4"/></svg>
             </a>
-          {% endfor %}
+          {% else %}
+            <span class="dao-page-btn is-disabled" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4l-4 4 4 4"/></svg>
+            </span>
+          {% endif %}
+
+          {% with num=page_obj.paginator.num_pages cur=page_obj.number %}
+            {% for i in page_obj.paginator.page_range %}
+              {% if i == 1 or i == num or i >= cur|add:"-2" and i <= cur|add:"2" %}
+                {% if i == cur %}
+                  <span class="dao-page-btn is-active" aria-current="page">{{ i }}</span>
+                {% else %}
+                  <a class="dao-page-btn" href="?page={{ i }}">{{ i }}</a>
+                {% endif %}
+              {% elif i == cur|add:"-3" or i == cur|add:"3" %}
+                <span class="dao-page-ellipsis" aria-hidden="true">…</span>
+              {% endif %}
+            {% endfor %}
+          {% endwith %}
+
+          {% if page_obj.has_next %}
+            <a class="dao-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="পরের পৃষ্ঠা">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>
+            </a>
+          {% else %}
+            <span class="dao-page-btn is-disabled" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>
+            </span>
+          {% endif %}
+
+          <p class="dao-pagination__info">
+            পৃষ্ঠা {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            &nbsp;·&nbsp; মোট {{ page_obj.paginator.count }} টি সংবাদ
+          </p>
+        </nav>
+        {% endif %}
+
+      </div>{# end .dao-content #}
+
+      {# ── RIGHT: SIDEBAR COLUMN ───────────────────────── #}
+      <aside class="dao-sidebar" aria-label="সাইডবার">
+
+        {# ── Sidebar Ad (placement="sidebar") ── #}
+        {% if sidebar_ads %}
+        <div class="dao-sidebar-block">
+          {% with ad=sidebar_ads.0 %}
+          <div class="dao-sidebar-ad">
+            <span class="dao-sidebar-ad__label">বিজ্ঞাপন</span>
+            {% if ad.ad_redirect_url %}
+            <a href="{{ ad.ad_redirect_url }}" target="_blank" rel="noopener sponsored" style="width:100%;text-align:center;">
+            {% endif %}
+              {% if ad.image %}
+                <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+              {% else %}
+                <div class="dao-sidebar-ad__title">{{ ad.title }}</div>
+                {% if ad.description %}<div style="font-size:.75rem;color:var(--dao-ink-muted);font-family:var(--dao-font-ui);">{{ ad.description }}</div>{% endif %}
+              {% endif %}
+              {% if ad.ad_redirect_url %}<span class="dao-sidebar-ad__cta">দেখুন</span>{% endif %}
+            {% if ad.ad_redirect_url %}</a>{% endif %}
+          </div>
+          {% endwith %}
         </div>
+        {% endif %}
+
+        {# ── Most-read ── #}
+        <div class="dao-sidebar-block">
+          <div class="dao-sidebar-title">সর্বাধিক পঠিত</div>
+          <div class="dao-slist">
+            {% for post in page_obj.object_list|slice:":5" %}
+            <div class="dao-slist-item">
+              <span class="dao-slist-item__num" aria-hidden="true">{{ forloop.counter }}</span>
+              {% if post.cover_image %}
+                <img class="dao-slist-item__thumb"
+                     src="{{ post.cover_image.url }}"
+                     alt=""
+                     loading="lazy"
+                     width="52" height="38" />
+              {% endif %}
+              <div class="dao-slist-item__body">
+                <a href="{% url 'core:post_detail' slug=post.slug %}"
+                   class="dao-slist-item__title">{{ post.title }}</a>
+                <div class="dao-slist-item__date">{{ post.published_at|date:"d M Y" }}</div>
+              </div>
+            </div>
+            {% empty %}
+            <p style="font-size:.8rem;color:var(--dao-ink-faint);padding:.5rem 0;font-family:var(--dao-font-ui);">কোনো সংবাদ নেই।</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        {# ── Tag cloud ── #}
+        {% if popular_tags %}
+        <div class="dao-sidebar-block">
+          <div class="dao-sidebar-title">বিষয় অনুযায়ী</div>
+          <div class="dao-tag-cloud">
+            {% for tag in popular_tags %}
+              <a href="{% url 'core:tag_feed' tag=tag.slug %}"
+                 class="dao-tag-chip {% if active_tag and active_tag.slug == tag.slug %}is-active{% endif %}">
+                {{ tag.name }}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </aside>
+
+    </div>{# end .dao-layout #}
+
+
+    {% if banner_ads and banner_ads|length > 1 %}
+    {% with ad=banner_ads.1 %}
+    <div class="dao-ad-banner-wrap">
+      <div class="dao-ad-banner">
+        <span class="dao-ad-banner__label">বিজ্ঞাপন</span>
+        {% if ad.ad_redirect_url %}
+        <a href="{{ ad.ad_redirect_url }}" target="_blank" rel="noopener sponsored">
+        {% endif %}
+          <div class="dao-ad-banner__inner">
+            {% if ad.image %}
+              <img src="{{ ad.image.url }}" alt="{{ ad.title }}" loading="lazy" />
+            {% else %}
+              <div class="dao-ad-banner__title">{{ ad.title }}</div>
+              {% if ad.description %}<div class="dao-ad-banner__desc">{{ ad.description }}</div>{% endif %}
+              {% if ad.ad_redirect_url %}<span class="dao-ad-banner__cta">বিস্তারিত দেখুন</span>{% endif %}
+            {% endif %}
+          </div>
+        {% if ad.ad_redirect_url %}</a>{% endif %}
       </div>
-      {% endif %}
+    </div>
+    {% endwith %}
+    {% elif banner_ads|length == 1 %}
+    {# single banner shown at top already — skip duplicate #}
+    {% endif %}
 
-    </aside>
+  </div>{# end .ck-container #}
 
-  </div>
+</div>{# end .dao-page #}
 
-</div>
+{# ── Scroll-to-top button ── #}
+<button class="dao-scroll-top" aria-label="উপরে ফিরুন" title="উপরে ফিরুন">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8 12V4M4 8l4-4 4 4"/>
+  </svg>
+</button>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}" defer></script>
 {% endblock %}

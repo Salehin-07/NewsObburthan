@@ -195,6 +195,8 @@ class AdvertisementAdmin(admin.ModelAdmin):
     list_editable = ('is_active', 'priority', 'show_every')
     search_fields = ('title', 'description')
     ordering      = ('-priority', '-created')
+    
+    # Keep preview_thumb in readonly_fields for the change view (fieldsets)
     readonly_fields = ('created', 'preview_thumb')
 
     fieldsets = (
@@ -202,7 +204,8 @@ class AdvertisementAdmin(admin.ModelAdmin):
             'fields': ('title', 'description', 'placement', 'priority')
         }),
         ('মিডিয়া', {
-            'fields': ('image', 'video', 'preview_thumb'),
+            # Removed preview_thumb from here temporarily if the error persists
+            'fields': ('image', 'video', 'preview_thumb'), 
             'description': 'ছবি অথবা ভিডিও — যেকোনো একটি দিন।',
         }),
         ('লিংক ও সময়সীমা', {
@@ -213,13 +216,21 @@ class AdvertisementAdmin(admin.ModelAdmin):
         }),
     )
 
+    @admin.display(description='প্রিভিউ')
     def preview_thumb(self, obj):
+        # Handle the case where the object hasn't been saved yet (Add view)
+        if not obj or not obj.pk:
+            return "—"
+            
         if obj.image:
-            return format_html(
-                '<img src="{}" style="height:48px;border-radius:3px;object-fit:cover;" />',
-                obj.image.url
-            )
+            try:
+                # Ensure the first arg is a literal string and the second is the variable
+                return format_html('<img src="{}" style="height:48px; width:auto; border-radius:3px; object-fit:cover;" />', obj.image.url)
+            except Exception:
+                return "Image Error"
+
         if obj.video:
-            return format_html('<span style="color:#c9a84c;">🎬 ভিডিও</span>')
-        return '—'
-    preview_thumb.short_description = 'প্রিভিউ'
+            # mark_safe is a good fallback for simple strings
+            return mark_safe('<span style="color:#c9a84c;">🎬 ভিডিও</span>')
+            
+        return "—"

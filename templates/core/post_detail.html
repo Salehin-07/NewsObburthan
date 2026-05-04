@@ -7,7 +7,6 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/post_detail.css' %}" />
 <style>
-  /* Reading progress bar */
   #ckReadingProgress {
     position: fixed;
     top: 0; left: 0;
@@ -16,24 +15,26 @@
     background: var(--ck-accent);
     z-index: 9998;
     transition: width .1s linear;
+    border-radius: 0 2px 2px 0;
   }
 </style>
 {% endblock %}
 
 {% block content %}
 
-
 <div id="ckReadingProgress" role="progressbar" aria-hidden="true"></div>
 
 <div class="ck-container">
   <div class="ck-detail-layout">
 
+    <!-- ═══ MAIN ARTICLE ═══ -->
     <article class="ck-detail-article"
              id="post-{{ post.slug }}"
              data-ck-post-title="{{ post.title }}"
              data-ck-post-url="{% url 'core:post_detail' slug=post.slug %}"
              data-ck-post-tags="{% for t in post.tags.all %}{{ t.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
 
+      <!-- Breadcrumb -->
       <nav class="ck-breadcrumb" aria-label="Breadcrumb">
         <a href="{% url 'core:home' %}">প্রচ্ছদ</a>
         <span class="ck-breadcrumb__sep">›</span>
@@ -41,9 +42,10 @@
           <a href="{% url 'core:tag_feed' tag=post.tags.first.slug %}">{{ post.tags.first.name }}</a>
           <span class="ck-breadcrumb__sep">›</span>
         {% endif %}
-        <span>{{ post.title|truncatechars:40 }}</span>
+        <span>{{ post.title|truncatechars:45 }}</span>
       </nav>
 
+      <!-- Article header -->
       <header class="ck-article-header">
         {% if post.tags.all %}
         <div class="ck-article-header__tags">
@@ -62,51 +64,72 @@
         <div class="ck-article-header__meta ck-meta">
           <span class="ck-meta-author">
             {% if post.author.reporter_profile.photo %}
-              <img class="ck-meta-avatar" src="{{ post.author.reporter_profile.photo.url }}" alt="{{ post.author.get_full_name }}" />
+              <img class="ck-meta-avatar"
+                   src="{{ post.author.reporter_profile.photo.url }}"
+                   alt="{{ post.author.get_full_name }}" />
             {% else %}
               <span class="ck-meta-avatar-placeholder">{{ post.author.get_full_name|default:post.author.username|slice:":1"|upper }}</span>
             {% endif %}
             {{ post.author.get_full_name|default:post.author.username }}
           </span>
           <span class="ck-meta-dot"></span>
-          <span class="ck-meta-date">{{ post.published_at|date:"d M Y, H:i" }}</span>
+          <time class="ck-meta-date" datetime="{{ post.published_at|date:'Y-m-d' }}">
+            {{ post.published_at|date:"d M Y, H:i" }}
+          </time>
           <span class="ck-meta-dot"></span>
           <span class="ck-meta-read">{{ post.reading_time }} মিনিট পড়া</span>
           <span class="ck-meta-dot"></span>
           <span class="ck-meta-views">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
             {{ post.views_count }}
           </span>
         </div>
       </header>
 
+      <!-- Share bar -->
       <div class="ck-article-share" aria-label="শেয়ার করুন">
         <span class="ck-article-share__label">শেয়ার</span>
         <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
-           target="_blank" rel="noopener noreferrer" class="ck-share-btn" aria-label="ফেসবুকে শেয়ার">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+           target="_blank" rel="noopener noreferrer"
+           class="ck-share-btn" aria-label="ফেসবুকে শেয়ার">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+          </svg>
           ফেসবুক
         </a>
         <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title|urlencode }}"
-           target="_blank" rel="noopener noreferrer" class="ck-share-btn" aria-label="টুইটারে শেয়ার">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+           target="_blank" rel="noopener noreferrer"
+           class="ck-share-btn" aria-label="টুইটারে শেয়ার">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
           টুইটার
         </a>
-        <button class="ck-share-btn ck-share-btn--copy" id="ckCopyLink" aria-label="লিঙ্ক কপি করুন">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <button class="ck-share-btn ck-share-btn--copy" id="ckCopyLink" type="button" aria-label="লিঙ্ক কপি করুন">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
           <span class="ck-share-btn__label">লিঙ্ক কপি</span>
         </button>
       </div>
 
+      <!-- Cover image -->
       {% if post.cover_image %}
       <figure class="ck-article-cover">
         <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" loading="eager" />
       </figure>
       {% endif %}
+
+      <!-- Article body -->
       <div class="ck-article-body">
         {{ post.content|linebreaks }}
       </div>
 
+      <!-- Article footer -->
       <footer class="ck-article-footer">
         {% if post.tags.all %}
         <div class="ck-article-footer__tags">
@@ -127,6 +150,7 @@
             </div>
           {% endif %}
           <div>
+            <div class="ck-article-footer__author-label">লেখক</div>
             <div class="ck-article-footer__author-name">
               {{ post.author.get_full_name|default:post.author.username }}
             </div>
@@ -139,7 +163,8 @@
 
     </article>
 
-    <aside class="ck-detail-sidebar">
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="ck-detail-sidebar" aria-label="পার্শ্ব প্যানেল">
 
       {% if related_posts %}
       <div class="ck-sidebar-block">
@@ -150,11 +175,7 @@
             <span class="ck-sidebar-item__num">{{ forloop.counter }}</span>
             <div class="ck-sidebar-item__body">
               <a href="{% url 'core:post_detail' slug=rp.slug %}"
-                 class="ck-sidebar-item__title"
-                 data-ck-post-title="{{ rp.title }}"
-                 data-ck-post-url="{% url 'core:post_detail' slug=rp.slug %}">
-                {{ rp.title }}
-              </a>
+                 class="ck-sidebar-item__title">{{ rp.title }}</a>
               <div class="ck-sidebar-item__date">{{ rp.published_at|date:"d M Y" }}</div>
             </div>
           </div>
@@ -175,20 +196,75 @@
       {% endif %}
 
     </aside>
-
   </div>
 
+  <!-- ═══ MORE POSTS ═══ -->
+  {% if more_posts %}
+  <section class="ck-more-posts" aria-label="আরও পড়ুন">
+    <div class="ck-more-posts__header">
+      <h2 class="ck-more-posts__heading">আরও পড়ুন</h2>
+      <a href="{% url 'core:home' %}" class="ck-more-posts__see-all">
+        সব সংবাদ
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"
+             width="13" height="13" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
 
-  <div style="padding: 1rem 0 2rem; border-top: 1px solid var(--ck-border);">
-    <a href="{% url 'core:home' %}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--ck-ink-muted);font-family:var(--ck-font-ui);transition:color var(--ck-transition);"
-       onmouseover="this.style.color='var(--ck-accent)'" onmouseout="this.style.color='var(--ck-ink-muted)'">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
-      প্রচ্ছদে ফিরুন
-    </a>
-  </div>
+    <div class="ck-more-posts__grid">
+      {% for mp in more_posts %}
+      <a href="{% url 'core:post_detail' slug=mp.slug %}"
+         class="ck-post-card {% if forloop.first %}ck-post-card--featured{% endif %}"
+         aria-label="{{ mp.title }}">
+
+        <div class="ck-post-card__thumb-wrap">
+          {% if mp.cover_image %}
+            <img class="ck-post-card__thumb"
+                 src="{{ mp.cover_image.url }}"
+                 alt="{{ mp.title }}"
+                 loading="lazy" />
+          {% else %}
+            <div class="ck-post-card__thumb-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="ck-post-card__body">
+          {% if mp.tags.first %}
+          <span class="ck-post-card__tag">{{ mp.tags.first.name }}</span>
+          {% endif %}
+          <h3 class="ck-post-card__title">{{ mp.title }}</h3>
+          <div class="ck-post-card__meta">
+            <span>{{ mp.author.get_full_name|default:mp.author.username }}</span>
+            <span class="ck-post-card__meta-dot"></span>
+            <time datetime="{{ mp.published_at|date:'Y-m-d' }}">{{ mp.published_at|date:"d M Y" }}</time>
+            {% if mp.reading_time %}
+            <span class="ck-post-card__meta-dot"></span>
+            <span>{{ mp.reading_time }} মিনিট</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Back link -->
+  <a href="{% url 'core:home' %}" class="ck-back-link">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"
+         width="14" height="14" aria-hidden="true">
+      <path d="M13 8H3M7 4l-4 4 4 4"/>
+    </svg>
+    প্রচ্ছদে ফিরুন
+  </a>
 
 </div>
-
 {% endblock %}
 
 {% block extra_js %}

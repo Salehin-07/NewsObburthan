@@ -29,9 +29,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY','hdjdlpakajsjsfjsjajwuwhh267992knb@@@##
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com','daily-obburthan.nav.bd','www.daily-obburthan.nav.bd']
+ALLOWED_HOSTS = ['.onrender.com','*.onrender.com','daily-obburthan.onrender.com','daily-obburthan.nav.bd','www.daily-obburthan.nav.bd','daily-obbuthan.pro.bd']
 
-CSRF_TRUSTED_ORIGINS=['https://daily-obburthan.onrender.com','https://daily-obburthan.nav.bd','https://www.daily-obburthan.nav.bd']
+CSRF_TRUSTED_ORIGINS=['https://daily-obburthan.onrender.com','https://daily-obburthan.nav.bd','https://www.daily-obburthan.nav.bd','https://daily-obbuthan.pro.bd']
 
 # Application definition
 
@@ -236,7 +236,7 @@ AWS_QUERYSTRING_AUTH = True
 
 MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.backblazeb2.com/'
 #MEDIA_ROOT = BASE_DIR / 'media'
-
+# 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com' 
 # EMAIL_PORT = 587
